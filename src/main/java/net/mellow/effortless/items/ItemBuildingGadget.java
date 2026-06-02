@@ -2,12 +2,14 @@ package net.mellow.effortless.items;
 
 import java.util.List;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.mellow.effortless.blocks.BlockMeta;
 import net.mellow.effortless.buildmode.BaseBuildMode;
 import net.mellow.effortless.buildmode.BuildModes;
 import net.mellow.effortless.buildmode.modes.*;
+import net.mellow.effortless.gui.GuiBuildingGadget;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -20,7 +22,7 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
 
-public class ItemBuildingGadget extends Item implements IItemRenderPreview {
+public class ItemBuildingGadget extends Item implements IItemRenderPreview, IItemGuiProvider {
 
     public static enum BuildingMode {
         EXTENDED(new Extended()), // greater reach
@@ -134,6 +136,11 @@ public class ItemBuildingGadget extends Item implements IItemRenderPreview {
     public void render(World world, EntityPlayer player, ItemStack stack, float partialTicks) {
         if (stack.stackTagCompound == null) stack.stackTagCompound = new NBTTagCompound();
         getMode(stack).handler.render(stack, world, player, partialTicks);
+    }
+
+    @Override
+    public void provideGui(ItemStack stack, EntityPlayer player) {
+        FMLCommonHandler.instance().showGuiScreen(new GuiBuildingGadget());
     }
 
 }

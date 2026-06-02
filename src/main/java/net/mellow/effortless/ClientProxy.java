@@ -12,6 +12,8 @@ public class ClientProxy extends CommonProxy {
         super.preInit(event);
 
         IItemRenderPreview.init();
+
+        Keybinds.register();
     }
 
 }
