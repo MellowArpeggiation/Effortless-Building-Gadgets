@@ -7,9 +7,14 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 import net.mellow.effortless.Keybinds;
+import net.mellow.effortless.blocks.BlockMeta;
 import net.mellow.effortless.items.ItemBuildingGadget;
+import net.mellow.effortless.items.ItemBuildingGadget.BuildingMode;
+import net.mellow.effortless.network.NBTControlPacket;
+import net.mellow.effortless.network.NetworkHandler;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.Tessellator;
@@ -17,11 +22,16 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
 public class GuiBuildingGadget extends GuiScreen {
 
     private ItemStack gadget;
-    private List<Block> usableBlocks = new ArrayList<>();
+    private List<BlockMeta> usableBlocks = new ArrayList<>();
+
+    private BuildingMode switchToMode = null;
+    private BlockMeta switchToBlock = null;
 
     public GuiBuildingGadget(ItemStack stack) {
         this.gadget = stack;
@@ -36,7 +46,7 @@ public class GuiBuildingGadget extends GuiScreen {
             if (stack == null) continue;
             if (!(stack.getItem() instanceof ItemBlock)) continue;
 
-            usableBlocks.add(((ItemBlock) stack.getItem()).field_150939_a);
+            usableBlocks.add(new BlockMeta(((ItemBlock) stack.getItem()).field_150939_a, stack.getItem().getMetadata(stack.getItemDamage())));
         }
     }
 
@@ -59,8 +69,6 @@ public class GuiBuildingGadget extends GuiScreen {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         drawDefaultBackground();
         
-        GL11.glEnable(GL11.GL_BLEND);
-        
         super.drawScreen(mouseX, mouseY, partialTicks);
 
         Tessellator tessellator = Tessellator.instance;
@@ -73,7 +81,11 @@ public class GuiBuildingGadget extends GuiScreen {
         double mx = mouseX - midX;
         double my = mouseY - midY;
 
+        // reset mouseover selection
+        switchToMode = null;
+        switchToBlock = null;
 
+        GL11.glEnable(GL11.GL_BLEND);
         GL11.glDisable(GL11.GL_TEXTURE_2D);
         GL11.glColor4d(1, 1, 1, 1);
 
@@ -111,6 +123,10 @@ public class GuiBuildingGadget extends GuiScreen {
                 || inTriangle(x1m1, y1m1, x1m2, y1m2, x2m2, y2m2, mx, my);
             boolean isHighlighted = begin <= mr && mr <= end && isMouseInQuad;
 
+            if (isHighlighted) {
+                switchToMode = BuildingMode.values()[i];
+            }
+
             tessellator.setColorRGBA(0, 0, 0, isHighlighted ? 255 : 120);
 
             tessellator.addVertex(midX + x1m1, midY + y1m1, 0);
@@ -135,6 +151,10 @@ public class GuiBuildingGadget extends GuiScreen {
 
             boolean isHighlighted = x1 <= mouseX && x2 >= mouseX && y1 <= mouseY && y2 >= mouseY;
 
+            if (isHighlighted) {
+                switchToBlock = usableBlocks.get(i);
+            }
+
             tessellator.setColorRGBA(0, 0, 0, isHighlighted ? 255 : 120);
             
             tessellator.addVertex(x1, y1, 0);
@@ -146,6 +166,31 @@ public class GuiBuildingGadget extends GuiScreen {
         tessellator.draw();
 
         GL11.glEnable(GL11.GL_TEXTURE_2D);
+        GL11.glDisable(GL11.GL_BLEND);
+    }
+
+    @Override
+    protected void mouseClicked(int x, int y, int key) {
+        super.mouseClicked(x, y, key);
+
+        if (switchToMode != null) {
+            NBTTagCompound data = new NBTTagCompound();
+            data.setString("mode", switchToMode.name());
+
+            NetworkHandler.instance.sendToServer(new NBTControlPacket(data));
+
+            playClick();
+        }
+
+        if (switchToBlock != null) {
+            NBTTagCompound data = new NBTTagCompound();
+            data.setInteger("block", Block.getIdFromBlock(switchToBlock.block));
+            data.setByte("meta", (byte)switchToBlock.meta);
+
+            NetworkHandler.instance.sendToServer(new NBTControlPacket(data));
+
+            playClick();
+        }
     }
 
     @Override
@@ -163,6 +208,10 @@ public class GuiBuildingGadget extends GuiScreen {
 
     private static int sign(final double n) {
         return n > 0 ? 1 : -1;
+    }
+
+    private static void playClick() {
+        Minecraft.getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
     }
     
 }

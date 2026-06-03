@@ -10,6 +10,7 @@ import net.mellow.effortless.buildmode.BaseBuildMode;
 import net.mellow.effortless.buildmode.BuildModes;
 import net.mellow.effortless.buildmode.modes.*;
 import net.mellow.effortless.gui.GuiBuildingGadget;
+import net.mellow.effortless.network.IItemControlReceiver;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -22,7 +23,7 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
 
-public class ItemBuildingGadget extends Item implements IItemRenderPreview, IItemGuiProvider {
+public class ItemBuildingGadget extends Item implements IItemRenderPreview, IItemGuiProvider, IItemControlReceiver {
 
     public static enum BuildingMode {
         EXTENDED(new Extended()), // greater reach
@@ -141,6 +142,13 @@ public class ItemBuildingGadget extends Item implements IItemRenderPreview, IIte
     @Override
     public void provideGui(ItemStack stack, EntityPlayer player) {
         FMLCommonHandler.instance().showGuiScreen(new GuiBuildingGadget(stack));
+    }
+
+    @Override
+    public void receiveControl(ItemStack stack, NBTTagCompound nbt) {
+        if (nbt.hasKey("mode")) stack.stackTagCompound.setString("mode", nbt.getString("mode"));
+        if (nbt.hasKey("block")) stack.stackTagCompound.setInteger("block", nbt.getInteger("block"));
+        if (nbt.hasKey("meta")) stack.stackTagCompound.setByte("meta", nbt.getByte("meta"));
     }
 
 }
