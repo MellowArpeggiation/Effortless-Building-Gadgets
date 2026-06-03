@@ -7,6 +7,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
+import net.mellow.effortless.Effortless;
 import net.mellow.effortless.Keybinds;
 import net.mellow.effortless.blocks.BlockMeta;
 import net.mellow.effortless.items.ItemBuildingGadget;
@@ -29,6 +30,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
 public class GuiBuildingGadget extends GuiScreen {
+
+    private static ResourceLocation buildIcons = new ResourceLocation(Effortless.MODID, "textures/gui/icons.png");
     
     private static RenderItem renderItem = new RenderItem();
 
@@ -190,6 +193,27 @@ public class GuiBuildingGadget extends GuiScreen {
 
         GL11.glEnable(GL11.GL_TEXTURE_2D);
         GL11.glDisable(GL11.GL_BLEND);
+
+
+
+        // Draw radial menu icons
+        mc.getTextureManager().bindTexture(buildIcons);
+        for (int i = 0; i < modeCount; i++) {
+            BuildingMode mode = BuildingMode.values()[i];
+
+            double begin = i * radiansPer - qtrCircle;
+            double end = (i + 1) * radiansPer - qtrCircle;
+
+            double x1 = Math.cos(begin);
+            double x2 = Math.cos(end);
+            double y1 = Math.sin(begin);
+            double y2 = Math.sin(end);
+
+            double x = (x1 + x2) * 0.5 * (ringOuter * 0.55 + 0.45 * ringInner);
+            double y = (y1 + y2) * 0.5 * (ringOuter * 0.55 + 0.45 * ringInner);
+
+            drawTexturedModalRect((int)(midX + x - 8), (int)(midY + y - 8), mode.iconX, mode.iconY, 16, 16);
+        }
 
 
 

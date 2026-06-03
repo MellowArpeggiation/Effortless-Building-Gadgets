@@ -18,24 +18,26 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
 
 public class ItemBuildingGadget extends Item implements IItemRenderPreview, IItemGuiProvider, IItemControlReceiver {
 
     public static enum BuildingMode {
-        EXTENDED(new Extended()), // greater reach
-        AIR(new Air()), // air placement
-        LINE(new Line()), // lines
-        WALL(new Wall()), // walls
-        FLOOR(new Floor()); // floors
+        EXTENDED(new Extended(), 16, 16), // greater reach
+        AIR(new Air(), 16, 16), // air placement
+        LINE(new Line(), 32, 16), // lines
+        WALL(new Wall(), 48, 16), // walls
+        FLOOR(new Floor(), 64, 16); // floors
 
         public BaseBuildMode handler;
+        public int iconX;
+        public int iconY;
 
-        private BuildingMode(BaseBuildMode handler) {
+        private BuildingMode(BaseBuildMode handler, int iconX, int iconY) {
             this.handler = handler;
+            this.iconX = iconX;
+            this.iconY = iconY;
         }
     }
 
@@ -64,36 +66,7 @@ public class ItemBuildingGadget extends Item implements IItemRenderPreview, IIte
 
         MovingObjectPosition mop = BuildModes.getMop(player, mode.handler.reach(stack));
 
-        if (player.isSneaking()) {
-            if (!world.isRemote) {
-                if (mop != null && mop.typeOfHit == MovingObjectType.BLOCK) {
-                    // select the hovered block, maybe also temporary, we'll see
-
-                    int x = mop.blockX;
-                    int y = mop.blockY;
-                    int z = mop.blockZ;
-    
-                    BlockMeta target = new BlockMeta(world.getBlock(x, y, z), world.getBlockMetadata(x, y, z));
-                    setSelected(stack, target);
-
-                    player.addChatMessage(new ChatComponentText("set block to: " + target.block.getUnlocalizedName()));
-                } else {
-                    // temporary shitty hack to skip implementing a GUI just yet
-
-                    int modeInt = mode.ordinal();
-                    modeInt += 1;
-                    if (modeInt >= BuildingMode.values().length) modeInt = 0;
-                    BuildingMode newMode = BuildingMode.values()[modeInt];
-
-                    mode.handler.clear(stack);
-                    setMode(stack, newMode);
-
-                    player.addChatMessage(new ChatComponentText("set mode to: " + newMode));
-                }
-            }
-        } else {
-            mode.handler.add(stack, getSelected(stack), world, player, mop);
-        }
+        mode.handler.add(stack, getSelected(stack), world, player, mop);
 
         return stack;
     }
