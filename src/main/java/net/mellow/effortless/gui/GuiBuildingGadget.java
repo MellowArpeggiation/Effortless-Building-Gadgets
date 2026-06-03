@@ -22,6 +22,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemBlock;
@@ -41,6 +42,7 @@ public class GuiBuildingGadget extends GuiScreen {
     private BlockMeta currentBlock;
 
     private List<BlockMeta> usableBlocks = new ArrayList<>();
+    private List<ItemStack> usableBlockStacks = new ArrayList<>(); // tiny bit clunky but hey this is almost certainly getting refactored once I realise a lot of block data is stored in itemstack NBT for some mods like architecturecraft... wait shit
 
     // For mouse click interactions
     private BuildingMode switchToMode = null;
@@ -67,6 +69,7 @@ public class GuiBuildingGadget extends GuiScreen {
             if (usableBlocks.contains(block)) continue;
 
             usableBlocks.add(block);
+            usableBlockStacks.add(stack);
         }
     }
 
@@ -196,8 +199,8 @@ public class GuiBuildingGadget extends GuiScreen {
 
 
 
-        // Draw radial menu icons
-        mc.getTextureManager().bindTexture(buildIcons);
+        // Draw radial menu icons + text
+        double textDistance = 75;
         for (int i = 0; i < modeCount; i++) {
             BuildingMode mode = BuildingMode.values()[i];
 
@@ -209,15 +212,37 @@ public class GuiBuildingGadget extends GuiScreen {
             double y1 = Math.sin(begin);
             double y2 = Math.sin(end);
 
-            double x = (x1 + x2) * 0.5 * (ringOuter * 0.55 + 0.45 * ringInner);
-            double y = (y1 + y2) * 0.5 * (ringOuter * 0.55 + 0.45 * ringInner);
+            double x = (x1 + x2) * 0.5;
+            double y = (y1 + y2) * 0.5;
+            
+            // icon
+            double iconX = x * (ringOuter * 0.55 + 0.45 * ringInner);
+            double iconY = y * (ringOuter * 0.55 + 0.45 * ringInner);
 
-            drawTexturedModalRect((int)(midX + x - 8), (int)(midY + y - 8), mode.iconX, mode.iconY, 16, 16);
+            mc.getTextureManager().bindTexture(buildIcons);
+            drawTexturedModalRect((int)(midX + iconX - 8), (int)(midY + iconY - 8), mode.iconX, mode.iconY, 16, 16);
+
+            // text
+            if (mode == switchToMode) {
+                int fx = (int) (x * textDistance);
+                int fy = (int) (y * textDistance) - fontRendererObj.FONT_HEIGHT / 2;
+                String text = I18n.format(mode.getUnlocalizedName());
+    
+                if (x <= -0.2) {
+                    fx -= fontRendererObj.getStringWidth(text);
+                } else if (-0.2 <= x && x <= 0.2) {
+                    fx -= fontRendererObj.getStringWidth(text) / 2;
+                }
+    
+                drawString(fontRendererObj, text, (int) midX + fx, (int) midY + fy, 0xFFFFFFFF);
+            }
         }
 
 
 
         // Draw block selecting icons
+
+        
         GL11.glEnable(GL12.GL_RESCALE_NORMAL);
         RenderHelper.enableGUIStandardItemLighting();
 
@@ -226,10 +251,23 @@ public class GuiBuildingGadget extends GuiScreen {
             double x = midX + i * btnWidth + i * padding - btnXOffset;
             double y = midY + btnYOffset;
             renderItem.renderItemIntoGUI(this.fontRendererObj, this.mc.getTextureManager(), new ItemStack(block.block, 1, block.meta), (int)x + 4, (int)y + 4);
+
+            if (block.equals(switchToBlock)) {
+                ItemStack stack = usableBlockStacks.get(i);
+                String text = I18n.format(stack.getItem().getUnlocalizedName(stack) + ".name");
+                int tx = (int) midX - fontRendererObj.getStringWidth(text) / 2;
+                int ty = (int) (midY + btnYOffset + btnWidth + 8);
+    
+                drawString(fontRendererObj, text, tx, ty, 0xFFFFFFFF);
+            }
         }
 
         RenderHelper.disableStandardItemLighting();
         GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+
+
+
+        // Draw helpful tooltip description, if available
     }
 
     @Override

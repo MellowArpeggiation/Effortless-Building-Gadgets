@@ -1,6 +1,7 @@
 package net.mellow.effortless.items;
 
 import java.util.List;
+import java.util.Locale;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
@@ -25,19 +26,27 @@ public class ItemBuildingGadget extends Item implements IItemRenderPreview, IIte
 
     public static enum BuildingMode {
         EXTENDED(new Extended(), 16, 16), // greater reach
-        AIR(new Air(), 16, 16), // air placement
+        AIR(new Air(), 240, 16), // air placement
         LINE(new Line(), 32, 16), // lines
         WALL(new Wall(), 48, 16), // walls
         FLOOR(new Floor(), 64, 16); // floors
 
-        public BaseBuildMode handler;
-        public int iconX;
-        public int iconY;
+        public final BaseBuildMode handler;
+        public final int iconX;
+        public final int iconY;
 
         private BuildingMode(BaseBuildMode handler, int iconX, int iconY) {
             this.handler = handler;
             this.iconX = iconX;
             this.iconY = iconY;
+        }
+        
+        public String getUnlocalizedName() {
+            return "buildingmode." + name().toLowerCase(Locale.ROOT) + ".name";
+        }
+
+        public String getUnlocalizedDesc() {
+            return "buildingmode." + name().toLowerCase(Locale.ROOT) + ".desc";
         }
     }
 

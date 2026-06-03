@@ -1,0 +1,7 @@
+buildingmode.extended.name=Extended
+buildingmode.extended.desc=Regular block placing with extended reach
+buildingmode.air.name=Air
+buildingmode.air.desc=Place blocks in the air
+buildingmode.line.name=Line
+buildingmode.wall.name=Wall
+buildingmode.floor.name=Floor
