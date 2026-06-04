@@ -15,7 +15,7 @@ public class Extended extends BaseBuildMode {
     public void add(ItemStack stack, BlockMeta selected, World world, EntityPlayer player, MovingObjectPosition mop) {
         BlockPos pos = BlockPos.fromRaycastSide(mop);
         if (pos == null) return;
-        world.setBlock(pos.x, pos.y, pos.z, selected.block, selected.meta, 3);
+        BaseBuildMode.buildBox(world, player, selected, pos, pos, false);
     }
 
     @Override

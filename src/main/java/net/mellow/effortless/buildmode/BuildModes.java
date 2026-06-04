@@ -65,8 +65,10 @@ public class BuildModes {
         return Vec3.createVectorHelper(x, y, z);
     }
 
+    // what the fuck... who do I even blame for this absolute fucking spaghetti ass bullshit, mojang or forge??
     public static Vec3 getPlayerPos(EntityPlayer player) {
-        return Vec3.createVectorHelper(player.posX, player.posY + player.getEyeHeight(), player.posZ);
+        float defaultEyeHeight = player.worldObj.isRemote ? player.getDefaultEyeHeight() : 0;
+        return Vec3.createVectorHelper(player.posX, player.posY + (player.getEyeHeight() - defaultEyeHeight), player.posZ);
     }
 
     public static boolean isCriteriaValid(Vec3 start, Vec3 look, int reach, EntityPlayer player, boolean skipRaytrace, Vec3 lineBound, Vec3 planeBound, double distToPlayerSq) {

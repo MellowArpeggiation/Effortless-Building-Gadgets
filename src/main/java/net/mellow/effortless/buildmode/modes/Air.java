@@ -21,11 +21,12 @@ public class Air extends BaseBuildMode {
     public void add(ItemStack stack, BlockMeta selected, World world, EntityPlayer player, MovingObjectPosition mop) {
         if (mop == null) return;
         if (mop.typeOfHit == MovingObjectType.MISS) {
-            world.setBlock(mop.blockX, mop.blockY, mop.blockZ, selected.block, selected.meta, 3);
+            BlockPos pos = new BlockPos(mop.blockX, mop.blockY, mop.blockZ);
+            BaseBuildMode.buildBox(world, player, selected, pos, pos, false);
         } else {
             BlockPos pos = BlockPos.fromRaycastSide(mop);
             if (pos == null) return;
-            world.setBlock(pos.x, pos.y, pos.z, selected.block, selected.meta, 3);
+            BaseBuildMode.buildBox(world, player, selected, pos, pos, false);
         }
     }
 
