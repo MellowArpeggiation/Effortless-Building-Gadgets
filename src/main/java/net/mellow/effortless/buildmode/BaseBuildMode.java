@@ -93,7 +93,7 @@ public abstract class BaseBuildMode {
     }
 
     public static ItemStack getMatchingStack(EntityPlayer player, BlockMeta selected) {
-        for (int i = 0; i < player.inventory.mainInventory.length; i++) {
+        for (int i = player.inventory.mainInventory.length - 1; i >= 0; i--) {
             ItemStack stack = player.inventory.mainInventory[i];
 
             if (stack == null) continue;
