@@ -91,11 +91,12 @@ public class GuiBuildingGadget extends GuiScreen {
             if (stack == null) continue;
             if (!(stack.getItem() instanceof ItemBlock)) continue;
 
-            BlockMeta block = new BlockMeta(((ItemBlock) stack.getItem()).field_150939_a, stack.getItem().getMetadata(stack.getItemDamage()));
+            BlockMeta type = new BlockMeta(((ItemBlock) stack.getItem()).field_150939_a, stack.getItem().getMetadata(stack.getItemDamage()));
 
-            if (usableBlocks.contains(block)) continue;
+            if (type.block.hasTileEntity(type.meta)) continue;
+            if (usableBlocks.contains(type)) continue;
 
-            usableBlocks.add(block);
+            usableBlocks.add(type);
             usableBlockStacks.add(stack);
         }
     }

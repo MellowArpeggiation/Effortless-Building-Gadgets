@@ -11,6 +11,7 @@ import net.mellow.effortless.buildmode.History.HistoryBlock;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
@@ -28,8 +29,16 @@ public abstract class BaseBuildMode {
         if (from == null || to == null) return;
         if (world.isRemote) return;
 
-        List<HistoryBlock> previousState = new ArrayList<>();
+        boolean useItems = !player.capabilities.isCreativeMode;
 
+        List<HistoryBlock> previousState = new ArrayList<>();
+        ItemStack toDeplete = null;
+        if (useItems) {
+            toDeplete = getMatchingStack(player, selected);
+            if (toDeplete == null) return;
+        }
+
+        outer:
         for (int x = Math.min(from.x, to.x); x <= Math.max(from.x, to.x); x++)
         for (int y = Math.min(from.y, to.y); y <= Math.max(from.y, to.y); y++)
         for (int z = Math.min(from.z, to.z); z <= Math.max(from.z, to.z); z++) {
@@ -39,11 +48,49 @@ public abstract class BaseBuildMode {
             int meta = world.getBlockMetadata(x, y, z);
             if (block.hasTileEntity(meta)) continue;
 
+            if (useItems) {
+                if (toDeplete == null || toDeplete.stackSize <= 0) {
+                    toDeplete = getMatchingStack(player, selected);
+
+                    if (toDeplete == null) {
+                        break outer;
+                    }
+                }
+
+                toDeplete.stackSize--;
+            }
+
             previousState.add(new HistoryBlock(new BlockMeta(block, meta), selected, new BlockPos(x, y, z)));
             world.setBlock(x, y, z, selected.block, selected.meta, 3);
         }
 
         History.addUndo(player, previousState);
+
+        cleanInventory(player);
+    }
+
+    public static ItemStack getMatchingStack(EntityPlayer player, BlockMeta selected) {
+        for (int i = 0; i < player.inventory.mainInventory.length; i++) {
+            ItemStack stack = player.inventory.mainInventory[i];
+
+            if (stack == null) continue;
+            if (stack.stackSize <= 0) continue;
+            if (!(stack.getItem() instanceof ItemBlock)) continue;
+
+            BlockMeta block = new BlockMeta(((ItemBlock) stack.getItem()).field_150939_a, stack.getItem().getMetadata(stack.getItemDamage()));
+
+            if (block.equals(selected)) return stack;
+        }
+
+        return null;
+    }
+
+    // Vanilla doesn't handle empty stacks automatically, this is a (shit) solution to that
+    public static void cleanInventory(EntityPlayer player) {
+        for (int i = 0; i < player.inventory.mainInventory.length; i++) {
+            ItemStack stack = player.inventory.mainInventory[i];
+            if (stack != null && stack.stackSize <= 0) player.inventory.mainInventory[i] = null;
+        }
     }
 
     public abstract void render(ItemStack stack, World world, EntityPlayer player, float partialTicks);

@@ -9,3 +9,5 @@ buildingmode.line.name=Line
 buildingmode.wall.name=Wall
 buildingmode.floor.name=Floor
 buildingmode.cube.name=Cube
+
+item.building_gadget.name=Building Gadget

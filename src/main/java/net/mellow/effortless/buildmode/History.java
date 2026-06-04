@@ -11,6 +11,7 @@ import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.util.FixedStack;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 public class History {
@@ -36,6 +37,7 @@ public class History {
         History blockSet = undoStack.pop();
         if (blockSet == null) return false;
 
+        int blocksReturned = 0;
         List<HistoryBlock> redoBlocks = new ArrayList<>();
 
         for (HistoryBlock step : blockSet.state) {
@@ -50,6 +52,18 @@ public class History {
 
             redoBlocks.add(new HistoryBlock(new BlockMeta(block, meta), step.type, step.pos));
             world.setBlock(x, y, z, step.type.block, step.type.meta, 3);
+            blocksReturned++;
+        }
+
+        if (!player.capabilities.isCreativeMode) {
+            while (blocksReturned > 0) {
+                // TODO: separate itemstacks by blocks if we add block randomisation
+                BlockMeta type = blockSet.state[0].isNow;
+                int size = Math.min(blocksReturned, 64);
+                ItemStack toReturn = new ItemStack(type.block, size, type.meta);
+                player.inventory.addItemStackToInventory(toReturn);
+                blocksReturned -= size;
+            }
         }
 
         addRedo(player, redoBlocks);
@@ -75,6 +89,14 @@ public class History {
         History blockSet = redoStack.pop();
         if (blockSet == null) return false;
 
+        boolean useItems = !player.capabilities.isCreativeMode;
+        
+        ItemStack toDeplete = null;
+        if (useItems) {
+            toDeplete = BaseBuildMode.getMatchingStack(player, blockSet.state[0].type);
+            if (toDeplete == null) return false;
+        }
+
         List<HistoryBlock> undoBlocks = new ArrayList<>();
 
         for (HistoryBlock step : blockSet.state) {
@@ -86,12 +108,26 @@ public class History {
             int meta = world.getBlockMetadata(x, y, z);
 
             if (!new BlockMeta(block, meta).equals(step.isNow)) continue;
+            
+            if (useItems) {
+                if (toDeplete == null || toDeplete.stackSize <= 0) {
+                    toDeplete = BaseBuildMode.getMatchingStack(player, blockSet.state[0].type);
+
+                    if (toDeplete == null) {
+                        break;
+                    }
+                }
+
+                toDeplete.stackSize--;
+            }
 
             undoBlocks.add(new HistoryBlock(new BlockMeta(block, meta), step.type, step.pos));
             world.setBlock(x, y, z, step.type.block, step.type.meta, 3);
         }
 
         addUndo(player, undoBlocks);
+
+        BaseBuildMode.cleanInventory(player);
 
         return true;
     }
