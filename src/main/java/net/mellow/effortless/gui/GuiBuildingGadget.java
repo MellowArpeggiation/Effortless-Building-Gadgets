@@ -2,7 +2,7 @@ package net.mellow.effortless.gui;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
@@ -11,8 +11,10 @@ import org.lwjgl.opengl.GL12;
 import net.mellow.effortless.Effortless;
 import net.mellow.effortless.Keybinds;
 import net.mellow.effortless.blocks.BlockMeta;
+import net.mellow.effortless.buildmode.ModeOptions.BuildingAction;
+import net.mellow.effortless.buildmode.ModeOptions.BuildingMode;
+import net.mellow.effortless.buildmode.ModeOptions.BuildingOption;
 import net.mellow.effortless.items.ItemBuildingGadget;
-import net.mellow.effortless.items.ItemBuildingGadget.BuildingMode;
 import net.mellow.effortless.network.NBTControlPacket;
 import net.mellow.effortless.network.NetworkHandler;
 import net.minecraft.block.Block;
@@ -41,6 +43,7 @@ public class GuiBuildingGadget extends GuiScreen {
 
     private BuildingMode currentMode;
     private BlockMeta currentBlock;
+    private Map<BuildingOption, BuildingAction> currentOptions;
 
     private List<BlockMeta> usableBlocks = new ArrayList<>();
     private List<ItemStack> usableBlockStacks = new ArrayList<>(); // tiny bit clunky but hey this is almost certainly getting refactored once I realise a lot of block data is stored in itemstack NBT for some mods like architecturecraft... wait shit
@@ -50,30 +53,8 @@ public class GuiBuildingGadget extends GuiScreen {
     private BlockMeta switchToBlock = null;
     private BuildingAction performAction = null;
 
-    public static enum BuildingAction {
-        UNDO(16, 0),
-        REDO(32, 0);
-
-        public final int iconX;
-        public final int iconY;
-
-        private BuildingAction(int iconX, int iconY) {
-            this.iconX = iconX;
-            this.iconY = iconY;
-        }
-
-        public String getAction() {
-            return name().toLowerCase(Locale.ROOT);
-        }
-        
-        public String getUnlocalizedName() {
-            return "buildingaction." + getAction() + ".name";
-        }
-
-        public String getUnlocalizedDesc() {
-            return "buildingaction." + getAction() + ".desc";
-        }
-    }
+    private BuildingOption switchToOptionName = null;
+    private BuildingAction switchToOptionValue = null;
 
     public GuiBuildingGadget(ItemStack stack) {
         this.gadget = stack;
@@ -83,6 +64,7 @@ public class GuiBuildingGadget extends GuiScreen {
     public void initGui() {
         currentMode = ItemBuildingGadget.getMode(gadget);
         currentBlock = ItemBuildingGadget.getSelected(gadget);
+        currentOptions = ItemBuildingGadget.getOptions(gadget);
 
         EntityPlayer player = this.mc.thePlayer;
         for (int i = 0; i < InventoryPlayer.getHotbarSize(); i++) {
@@ -124,9 +106,9 @@ public class GuiBuildingGadget extends GuiScreen {
 
         Tessellator tessellator = Tessellator.instance;
 
-        int modeCount = ItemBuildingGadget.BuildingMode.values().length;
-        int blockCount = usableBlocks.size();
-        int actionCount = BuildingAction.values().length;
+        BuildingMode[] modes = BuildingMode.values();
+        BuildingAction[] actions = BuildingAction.getGlobalActions();
+        BuildingOption[] options = currentMode.options;
 
         double midX = width / 2;
         double midY = height / 2;
@@ -137,10 +119,15 @@ public class GuiBuildingGadget extends GuiScreen {
         switchToMode = null;
         switchToBlock = null;
         performAction = null;
+        switchToOptionName = null;
+        switchToOptionValue = null;
 
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glDisable(GL11.GL_TEXTURE_2D);
         GL11.glColor4d(1, 1, 1, 1);
+
+        tessellator.startDrawingQuads();
+
 
         // Draw radial menu
         double mr = Math.atan2(my, mx);
@@ -154,12 +141,10 @@ public class GuiBuildingGadget extends GuiScreen {
         double ringOuter = 65;
         double gapInner = Math.PI * 0.005;
         double gapOuter = Math.PI * 0.0025;
-        double radiansPer = 2 * Math.PI / modeCount;
+        double radiansPer = 2 * Math.PI / modes.length;
 
-        tessellator.startDrawingQuads();
-
-        for (int i = 0; i < modeCount; i++) {
-            BuildingMode mode = BuildingMode.values()[i];
+        for (int i = 0; i < modes.length; i++) {
+            BuildingMode mode = modes[i];
 
             double begin = i * radiansPer - qtrCircle;
             double end = (i + 1) * radiansPer - qtrCircle;
@@ -196,10 +181,10 @@ public class GuiBuildingGadget extends GuiScreen {
         // Draw block selecting buttons
         double btnWidth = 24;
         double padding = 2;
-        double blockXOffset = -(blockCount * btnWidth + (blockCount - 1) * padding) / 2;
+        double blockXOffset = -(usableBlocks.size() * btnWidth + (usableBlocks.size() - 1) * padding) / 2;
         double blockYOffset = 70;
 
-        for (int i = 0; i < blockCount; i++) {
+        for (int i = 0; i < usableBlocks.size(); i++) {
             BlockMeta block = usableBlocks.get(i);
 
             double x1 = midX + i * btnWidth + i * padding + blockXOffset;
@@ -225,11 +210,11 @@ public class GuiBuildingGadget extends GuiScreen {
 
 
         // Draw action buttons
-        double actionXOffset = -(actionCount * btnWidth + (actionCount - 1) * padding) / 2 - 120;
-        double actionYOffset = 0;
+        double actionXOffset = -100 - (actions.length * btnWidth + (actions.length - 1) * padding); // right aligned
+        double actionYOffset = -20;
 
-        for (int i = 0; i < actionCount; i++) {
-            BuildingAction action = BuildingAction.values()[i];
+        for (int i = 0; i < actions.length; i++) {
+            BuildingAction action = actions[i];
 
             double x1 = midX + i * btnWidth + i * padding + actionXOffset;
             double x2 = x1 + btnWidth;
@@ -250,6 +235,41 @@ public class GuiBuildingGadget extends GuiScreen {
             tessellator.addVertex(x2, y1, 0);
         }
 
+
+
+        // Draw build mode options
+        double optionXOffset = 100; // left aligned
+        double optionYOffset = -20; 
+        for (int i = 0; i < options.length; i++) {
+            BuildingOption option = options[i];
+
+            for (int o = 0; o < option.actions.length; o++) {
+                BuildingAction action = option.actions[o];
+
+                double x1 = midX + o * btnWidth + o * padding + optionXOffset;
+                double x2 = x1 + btnWidth;
+                double y1 = midY + i * btnWidth + i * 20 + optionYOffset;
+                double y2 = y1 + btnWidth;
+
+                boolean isSelected = action == currentOptions.get(option);
+                boolean isHighlighted = x1 <= mouseX && x2 >= mouseX && y1 <= mouseY && y2 >= mouseY;
+
+                if (isHighlighted) {
+                    switchToOptionName = option;
+                    switchToOptionValue = action;
+                }
+
+                tessellator.setColorRGBA(0, 0, 0, isHighlighted ? 255 : isSelected ? 170 : 80);
+                
+                tessellator.addVertex(x1, y1, 0);
+                tessellator.addVertex(x1, y2, 0);
+                tessellator.addVertex(x2, y2, 0);
+                tessellator.addVertex(x2, y1, 0);
+            }
+        }
+
+
+
         tessellator.draw();
 
         GL11.glEnable(GL11.GL_TEXTURE_2D);
@@ -259,8 +279,8 @@ public class GuiBuildingGadget extends GuiScreen {
 
         // Draw radial menu icons + text
         double textDistance = 75;
-        for (int i = 0; i < modeCount; i++) {
-            BuildingMode mode = BuildingMode.values()[i];
+        for (int i = 0; i < modes.length; i++) {
+            BuildingMode mode = modes[i];
 
             double begin = i * radiansPer - qtrCircle;
             double end = (i + 1) * radiansPer - qtrCircle;
@@ -302,7 +322,7 @@ public class GuiBuildingGadget extends GuiScreen {
         GL11.glEnable(GL12.GL_RESCALE_NORMAL);
         RenderHelper.enableGUIStandardItemLighting();
 
-        for (int i = 0; i < blockCount; i++) {
+        for (int i = 0; i < usableBlocks.size(); i++) {
             BlockMeta block = usableBlocks.get(i);
             double x = midX + i * btnWidth + i * padding + blockXOffset;
             double y = midY + blockYOffset;
@@ -321,7 +341,7 @@ public class GuiBuildingGadget extends GuiScreen {
         RenderHelper.disableStandardItemLighting();
         GL11.glDisable(GL12.GL_RESCALE_NORMAL);
 
-        if (blockCount == 0) {
+        if (usableBlocks.isEmpty()) {
             String text = I18n.format("buildingui.noblocks");
             int tx = (int) midX - fontRendererObj.getStringWidth(text) / 2;
             int ty = (int) (midY + blockYOffset + btnWidth + 8);
@@ -333,8 +353,8 @@ public class GuiBuildingGadget extends GuiScreen {
 
 
         // Draw action button icons
-        for (int i = 0; i < actionCount; i++) {
-            BuildingAction action = BuildingAction.values()[i];
+        for (int i = 0; i < actions.length; i++) {
+            BuildingAction action = actions[i];
             double x = midX + i * btnWidth + i * padding + actionXOffset;
             double y = midY + actionYOffset;
 
@@ -343,10 +363,35 @@ public class GuiBuildingGadget extends GuiScreen {
 
             if (action == performAction) {
                 String text = I18n.format(action.getUnlocalizedName());
-                int tx = (int) (midX - 120 - fontRendererObj.getStringWidth(text) / 2);
-                int ty = (int) (midY + actionYOffset + btnWidth + 8);
+                int tx = (int) (midX - 100 - fontRendererObj.getStringWidth(text));
+                int ty = (int) (midY + actionYOffset + btnWidth + padding + 6);
     
                 drawString(fontRendererObj, text, tx, ty, 0xFFFFFFFF);
+            }
+        }
+
+
+
+        // Draw option button icons
+        for (int i = 0; i < options.length; i++) {
+            BuildingOption option = options[i];
+
+            for (int o = 0; o < option.actions.length; o++) {
+                BuildingAction action = option.actions[o];
+
+                double x = midX + o * btnWidth + o * padding + optionXOffset;
+                double y = midY + i * btnWidth + i * 20 + optionYOffset;
+
+                mc.getTextureManager().bindTexture(buildIcons);
+                drawTexturedModalRect((int)(x + 4), (int)(y + 4), action.iconX, action.iconY, 16, 16);
+
+                if (action == switchToOptionValue) {
+                    String text = I18n.format(action.getUnlocalizedName());
+                    int tx = (int) (midX + 100);
+                    int ty = (int) (midY + optionYOffset + (options.length * btnWidth) + (options.length * padding) + 6);
+        
+                    drawString(fontRendererObj, text, tx, ty, 0xFFFFFFFF);
+                }
             }
         }
 
@@ -393,9 +438,20 @@ public class GuiBuildingGadget extends GuiScreen {
 
         if (performAction != null) {
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("action", performAction.getAction());
+            data.setString("action", performAction.name());
 
             NetworkHandler.instance.sendToServer(new NBTControlPacket(data));
+
+            playClick();
+        }
+
+        if (switchToOptionName != null && switchToOptionValue != null) {
+            NBTTagCompound data = new NBTTagCompound();
+            data.setString("option", switchToOptionName.name());
+            data.setString("value", switchToOptionValue.name());
+
+            NetworkHandler.instance.sendToServer(new NBTControlPacket(data));
+            currentOptions.put(switchToOptionName, switchToOptionValue);
 
             playClick();
         }

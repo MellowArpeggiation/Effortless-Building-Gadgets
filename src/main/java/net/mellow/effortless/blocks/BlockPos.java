@@ -50,6 +50,22 @@ public class BlockPos implements Comparable<BlockPos> {
         return new BlockPos(MathHelper.floor_double(vec.xCoord), MathHelper.floor_double(vec.yCoord), MathHelper.floor_double(vec.zCoord));
     }
 
+    public static BlockPos min(BlockPos one, BlockPos two) {
+        return new BlockPos(Math.min(one.x, two.x), Math.min(one.y, two.y), Math.min(one.z, two.z));
+    }
+
+    public static BlockPos max(BlockPos one, BlockPos two) {
+        return new BlockPos(Math.max(one.x, two.x), Math.max(one.y, two.y), Math.max(one.z, two.z));
+    }
+
+    public BlockPos add(BlockPos pos) {
+        return new BlockPos(x + pos.x, y + pos.y, z + pos.z);
+    }
+
+    public BlockPos add(int x, int y, int z) {
+        return new BlockPos(this.x + x, this.y + y, this.z + z);
+    }
+
     public BlockPos subtract(BlockPos pos) {
         return new BlockPos(x - pos.x, y - pos.y, z - pos.z);
     }

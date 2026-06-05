@@ -32,12 +32,72 @@ public abstract class BaseBuildMode {
 
         List<BlockPos> positions = new ArrayList<>();
 
-        for (int x = Math.min(from.x, to.x); x <= Math.max(from.x, to.x); x++)
-        for (int y = Math.min(from.y, to.y); y <= Math.max(from.y, to.y); y++)
-        for (int z = Math.min(from.z, to.z); z <= Math.max(from.z, to.z); z++) {
+        BlockPos min = BlockPos.min(from, to);
+        BlockPos max = BlockPos.max(from, to);
+
+        for (int x = min.x; x <= max.x; x++)
+        for (int y = min.y; y <= max.y; y++)
+        for (int z = min.z; z <= max.z; z++) {
             positions.add(new BlockPos(x, y, z));
         }
         
+        return build(world, player, selected, positions, replaceAny);
+    }
+
+    public static int buildHollowFloor(World world, EntityPlayer player, BlockMeta selected, BlockPos from, BlockPos to, boolean replaceAny) {
+        if (world.isRemote) return 0;
+        if (from == null || to == null) return 0;
+
+        List<BlockPos> positions = new ArrayList<>();
+
+        for (int x = Math.min(from.x, to.x); x <= Math.max(from.x, to.x); x++) {
+            positions.add(new BlockPos(x, from.y, from.z));
+            if (from.z != to.z) positions.add(new BlockPos(x, from.y, to.z));
+        }
+
+        for (int z = Math.min(from.z, to.z); z <= Math.max(from.z, to.z); z++) {
+            positions.add(new BlockPos(from.x, from.y, z));
+            if (from.x != to.x) positions.add(new BlockPos(to.x, from.y, z));
+        }
+
+        return build(world, player, selected, positions, replaceAny);
+    }
+
+    public static int buildHollowWallX(World world, EntityPlayer player, BlockMeta selected, BlockPos from, BlockPos to, boolean replaceAny) {
+        if (world.isRemote) return 0;
+        if (from == null || to == null) return 0;
+
+        List<BlockPos> positions = new ArrayList<>();
+
+        for (int z = Math.min(from.z, to.z); z <= Math.max(from.z, to.z); z++) {
+            positions.add(new BlockPos(from.x, from.y, z));
+            if (from.y != to.y) positions.add(new BlockPos(from.x, to.y, z));
+        }
+
+        for (int y = Math.min(from.y, to.y); y <= Math.max(from.y, to.y); y++) {
+            positions.add(new BlockPos(from.x, y, from.z));
+            if (from.z != to.z) positions.add(new BlockPos(from.x, y, to.z));
+        }
+
+        return build(world, player, selected, positions, replaceAny);
+    }
+
+    public static int buildHollowWallZ(World world, EntityPlayer player, BlockMeta selected, BlockPos from, BlockPos to, boolean replaceAny) {
+        if (world.isRemote) return 0;
+        if (from == null || to == null) return 0;
+
+        List<BlockPos> positions = new ArrayList<>();
+
+        for (int x = Math.min(from.x, to.x); x <= Math.max(from.x, to.x); x++) {
+            positions.add(new BlockPos(x, from.y, from.z));
+            if (from.y != to.y) positions.add(new BlockPos(x, to.y, from.z));
+        }
+
+        for (int y = Math.min(from.y, to.y); y <= Math.max(from.y, to.y); y++) {
+            positions.add(new BlockPos(from.x, y, from.z));
+            if (from.x != to.x) positions.add(new BlockPos(to.x, y, from.z));
+        }
+
         return build(world, player, selected, positions, replaceAny);
     }
 
@@ -123,12 +183,15 @@ public abstract class BaseBuildMode {
         double dy = player.prevPosY + (player.posY - player.prevPosY) * partialTicks;
         double dz = player.prevPosZ + (player.posZ - player.prevPosZ) * partialTicks;
 
-        double minX = Math.min(from.x, to.x) + 0.125;
-        double maxX = Math.max(from.x, to.x) + 0.875;
-        double minY = Math.min(from.y, to.y) + 0.125;
-        double maxY = Math.max(from.y, to.y) + 0.875;
-        double minZ = Math.min(from.z, to.z) + 0.125;
-        double maxZ = Math.max(from.z, to.z) + 0.875;
+        BlockPos min = BlockPos.min(from, to);
+        BlockPos max = BlockPos.max(from, to);
+
+        double minX = min.x + 0.125;
+        double maxX = max.x + 0.875;
+        double minY = min.y + 0.125;
+        double maxY = max.y + 0.875;
+        double minZ = min.z + 0.125;
+        double maxZ = max.z + 0.875;
         
         GL11.glPushMatrix();
         GL11.glDisable(GL11.GL_LIGHTING);

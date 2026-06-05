@@ -7,6 +7,9 @@ import net.mellow.effortless.blocks.BlockMeta;
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.buildmode.BaseBuildMode;
 import net.mellow.effortless.buildmode.BuildModes;
+import net.mellow.effortless.buildmode.ModeOptions.BuildingAction;
+import net.mellow.effortless.buildmode.ModeOptions.BuildingOption;
+import net.mellow.effortless.items.ItemBuildingGadget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -30,6 +33,16 @@ public class Wall extends BaseBuildMode {
 
             clear(stack);
             
+            BuildingAction fillMode = ItemBuildingGadget.getAction(stack, BuildingOption.FILL);
+            
+            if (fillMode == BuildingAction.HOLLOW) {
+                if (from.x != to.x) {
+                    return buildHollowWallZ(world, player, selected, from, to, false);
+                } else if (from.z != to.z) {
+                    return buildHollowWallX(world, player, selected, from, to, false);
+                }
+            }
+            
             return buildBox(world, player, selected, from, to, false);
         }
 
@@ -52,8 +65,20 @@ public class Wall extends BaseBuildMode {
         } else {
             BlockPos to = findWall(player, from, true);;
             if (to == null) return;
-    
+            
             renderBox(player, partialTicks, from, to);
+            
+            BuildingAction fillMode = ItemBuildingGadget.getAction(stack, BuildingOption.FILL);
+            if (fillMode == BuildingAction.HOLLOW && Math.abs(from.y - to.y) > 1) {
+                BlockPos min = BlockPos.min(from, to);
+                BlockPos max = BlockPos.max(from, to);
+
+                if (max.x - min.x > 1) {
+                    renderBox(player, partialTicks, min.add(1, 1, 0), max.add(-1, -1, 0));
+                } else if(max.z - min.z > 1) {
+                    renderBox(player, partialTicks, min.add(0, 1, 1), max.add(0, -1, -1));
+                }
+            }
         }
     }
     

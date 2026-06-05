@@ -7,6 +7,9 @@ import net.mellow.effortless.blocks.BlockMeta;
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.buildmode.BaseBuildMode;
 import net.mellow.effortless.buildmode.BuildModes;
+import net.mellow.effortless.buildmode.ModeOptions.BuildingAction;
+import net.mellow.effortless.buildmode.ModeOptions.BuildingOption;
+import net.mellow.effortless.items.ItemBuildingGadget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -30,6 +33,14 @@ public class Floor extends BaseBuildMode {
 
             clear(stack);
             
+            BuildingAction fillMode = ItemBuildingGadget.getAction(stack, BuildingOption.FILL);
+
+            if (fillMode == BuildingAction.HOLLOW) {
+                if (from.x != to.x && from.z != to.z) {
+                    return buildHollowFloor(world, player, selected, from, to, false);
+                }
+            }
+            
             return buildBox(world, player, selected, from, to, false);
         }
 
@@ -52,8 +63,16 @@ public class Floor extends BaseBuildMode {
         } else {
             BlockPos to = findFloor(player, from, true);;
             if (to == null) return;
-    
+            
             renderBox(player, partialTicks, from, to);
+            
+            BuildingAction fillMode = ItemBuildingGadget.getAction(stack, BuildingOption.FILL);
+            if (fillMode == BuildingAction.HOLLOW && (Math.abs(from.x - to.x) > 1 && Math.abs(from.z - to.z) > 1)) {
+                BlockPos min = BlockPos.min(from, to);
+                BlockPos max = BlockPos.max(from, to);
+                
+                renderBox(player, partialTicks, min.add(1, 0, 1), max.add(-1, 0, -1));
+            }
         }
     }
 

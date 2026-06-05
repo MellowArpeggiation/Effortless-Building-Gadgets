@@ -1,7 +1,8 @@
 package net.mellow.effortless.items;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 
 import org.lwjgl.input.Keyboard;
 
@@ -14,10 +15,11 @@ import cpw.mods.fml.relauncher.SideOnly;
 import cofh.api.energy.IEnergyContainerItem;
 import net.mellow.effortless.Keybinds;
 import net.mellow.effortless.blocks.BlockMeta;
-import net.mellow.effortless.buildmode.BaseBuildMode;
 import net.mellow.effortless.buildmode.BuildModes;
 import net.mellow.effortless.buildmode.History;
-import net.mellow.effortless.buildmode.modes.*;
+import net.mellow.effortless.buildmode.ModeOptions.BuildingAction;
+import net.mellow.effortless.buildmode.ModeOptions.BuildingMode;
+import net.mellow.effortless.buildmode.ModeOptions.BuildingOption;
 import net.mellow.effortless.gui.GuiBuildingGadget;
 import net.mellow.effortless.network.IItemControlReceiver;
 import net.mellow.effortless.util.MathUtil;
@@ -37,33 +39,6 @@ import net.minecraft.world.World;
     @Optional.Interface(iface = "api.hbm.energymk2.IBatteryItem", modid = "hbm"),
 })
 public class ItemBuildingGadget extends Item implements IItemRenderPreview, IItemGuiProvider, IItemControlReceiver, IEnergyContainerItem, IBatteryItem {
-
-    public static enum BuildingMode {
-        EXTENDED(new Extended(), 16, 16), // greater reach
-        AIR(new Air(), 240, 16), // air placement
-        LINE(new Line(), 32, 16), // lines
-        WALL(new Wall(), 48, 16), // walls
-        FLOOR(new Floor(), 64, 16), // floors
-        CUBE(new Cube(), 80, 16); // miney crafta
-
-        public final BaseBuildMode handler;
-        public final int iconX;
-        public final int iconY;
-
-        private BuildingMode(BaseBuildMode handler, int iconX, int iconY) {
-            this.handler = handler;
-            this.iconX = iconX;
-            this.iconY = iconY;
-        }
-        
-        public String getUnlocalizedName() {
-            return "buildingmode." + name().toLowerCase(Locale.ROOT) + ".name";
-        }
-
-        public String getUnlocalizedDesc() {
-            return "buildingmode." + name().toLowerCase(Locale.ROOT) + ".desc";
-        }
-    }
 
     private static boolean hasRF;
     private static boolean hasHE;
@@ -140,14 +115,37 @@ public class ItemBuildingGadget extends Item implements IItemRenderPreview, IIte
         return new BlockMeta(stack.stackTagCompound.getInteger("block"), stack.stackTagCompound.getByte("meta"));
     }
 
-
     // mode is stored as a string so inserting new modes won't fuck up existing tools
     public static BuildingMode getMode(ItemStack stack) {
-        if (stack.stackTagCompound == null || !stack.stackTagCompound.hasKey("mode")) return BuildingMode.EXTENDED;
+        if (stack.stackTagCompound == null || !stack.stackTagCompound.hasKey("mode")) return BuildingMode.values()[0];
         try {
             return BuildingMode.valueOf(stack.stackTagCompound.getString("mode"));
         } catch (IllegalArgumentException ex) {
-            return BuildingMode.LINE;
+            return BuildingMode.values()[0];
+        }
+    }
+
+    public static Map<BuildingOption, BuildingAction> getOptions(ItemStack stack) {
+        Map<BuildingOption, BuildingAction> map = new HashMap<>();
+        if (stack.stackTagCompound == null) return map;
+
+        for (BuildingOption option : BuildingOption.values()) {
+            try {
+                map.put(option, BuildingAction.valueOf(stack.stackTagCompound.getString(option.name())));
+            } catch (IllegalArgumentException ex) {
+                map.put(option, option.actions[0]);
+            }
+        }
+
+        return map;
+    }
+
+    public static BuildingAction getAction(ItemStack stack, BuildingOption option) {
+        if (stack.stackTagCompound == null) return option.actions[0];
+        try {
+            return BuildingAction.valueOf(stack.stackTagCompound.getString(option.name()));
+        } catch (IllegalArgumentException ex) {
+            return option.actions[0];
         }
     }
 
@@ -171,12 +169,16 @@ public class ItemBuildingGadget extends Item implements IItemRenderPreview, IIte
         if (nbt.hasKey("block")) stack.stackTagCompound.setInteger("block", nbt.getInteger("block"));
         if (nbt.hasKey("meta")) stack.stackTagCompound.setByte("meta", nbt.getByte("meta"));
 
+        if (nbt.hasKey("option")) {
+            stack.stackTagCompound.setString(nbt.getString("option"), nbt.getString("value"));
+        }
+
         if (nbt.hasKey("action")) {
             String action = nbt.getString("action");
 
             switch (action) {
-                case "undo": History.undo(player.worldObj, player); break;
-                case "redo": History.redo(player.worldObj, player); break;
+                case "UNDO": History.undo(player.worldObj, player); break;
+                case "REDO": History.redo(player.worldObj, player); break;
             }
         }
     }

@@ -1,5 +1,7 @@
 buildingaction.undo.name=Undo
 buildingaction.redo.name=Redo
+buildingaction.full.name=Filled
+buildingaction.hollow.name=Hollow
 
 buildingmode.extended.name=Extended
 buildingmode.extended.desc=Regular block placing with extended reach
