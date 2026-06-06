@@ -104,7 +104,7 @@ public class GuiBuildingGadget extends GuiScreen {
         super.handleMouseInput();
 
         int scroll = Mouse.getEventDWheel();
-        if (scroll != 0) {
+        if (scroll != 0 && !usableBlocks.isEmpty()) {
             int index = usableBlocks.indexOf(currentBlock);
 
             if (scroll > 0) index--;
