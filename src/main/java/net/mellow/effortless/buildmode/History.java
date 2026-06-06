@@ -19,6 +19,16 @@ public class History {
     private static Map<UUID, FixedStack<History>> undoStacks = new HashMap<>();
     private static Map<UUID, FixedStack<History>> redoStacks = new HashMap<>();
 
+    public static void clear(EntityPlayer player) {
+        undoStacks.remove(player.getUniqueID());
+        redoStacks.remove(player.getUniqueID());
+    }
+
+    public static void clear() {
+        undoStacks.clear();
+        redoStacks.clear();
+    }
+
     public static void addUndo(EntityPlayer player, List<HistoryBlock> blocks) {
         History history = new History(blocks);
 
