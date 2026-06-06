@@ -1,0 +1,1 @@
+* Added support for Adventure Backpacks tool slots

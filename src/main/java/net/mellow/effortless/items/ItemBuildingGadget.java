@@ -24,10 +24,11 @@ import net.mellow.effortless.gui.GuiBuildingGadget;
 import net.mellow.effortless.network.IItemControlReceiver;
 import net.mellow.effortless.util.MathUtil;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
+import net.minecraft.item.ItemFlintAndSteel;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
@@ -38,7 +39,11 @@ import net.minecraft.world.World;
     @Optional.Interface(iface = "cofh.api.energy.IEnergyContainerItem", modid = "CoFHAPI"),
     @Optional.Interface(iface = "api.hbm.energymk2.IBatteryItem", modid = "hbm"),
 })
-public class ItemBuildingGadget extends Item implements IItemRenderPreview, IItemGuiProvider, IItemControlReceiver, IEnergyContainerItem, IBatteryItem {
+public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRenderPreview, IItemGuiProvider, IItemControlReceiver, IEnergyContainerItem, IBatteryItem {
+
+    // why ItemFlintAndSteel?
+    // A bunch of mods like Adventure Backpacks use these classes to determine if something is a "tool",
+    // and this Item subclass is by far the easiest one to inherit without breaking anything
 
     private static boolean hasRF;
     private static boolean hasHE;
@@ -51,6 +56,12 @@ public class ItemBuildingGadget extends Item implements IItemRenderPreview, IIte
             hasRF = false;
         }
         hasHE = Loader.isModLoaded("hbm");
+    }
+
+    public ItemBuildingGadget() {
+        this.setCreativeTab(CreativeTabs.tabTools);
+        this.setMaxStackSize(1);
+        this.setFull3D();
     }
 
     @Override

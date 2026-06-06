@@ -2,7 +2,6 @@ package net.mellow.effortless.items;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 import net.mellow.effortless.Effortless;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 
 public class ModItems {
@@ -18,9 +17,6 @@ public class ModItems {
 
         building_gadget = new ItemBuildingGadget()
             .setUnlocalizedName("building_gadget")
-            .setCreativeTab(CreativeTabs.tabTools)
-            .setMaxStackSize(1)
-            .setFull3D()
             .setTextureName(Effortless.MODID + ":gadget");
 
     }
