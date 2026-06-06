@@ -206,6 +206,8 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
 
     @Override
     public void receiveControl(EntityPlayer player, ItemStack stack, NBTTagCompound nbt) {
+        if (stack.stackTagCompound == null) stack.stackTagCompound = new NBTTagCompound();
+
         BuildingMode mode = getMode(stack);
         if (mode.handler != null) {
             getMode(stack).handler.clear(stack);
