@@ -81,7 +81,7 @@ public class Wall extends BaseBuildMode {
 
                 if (max.x - min.x > 1) {
                     renderBox(player, partialTicks, min.add(1, 1, 0), max.add(-1, -1, 0));
-                } else if(max.z - min.z > 1) {
+                } else if (max.z - min.z > 1) {
                     renderBox(player, partialTicks, min.add(0, 1, 1), max.add(0, -1, -1));
                 }
             }

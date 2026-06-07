@@ -39,7 +39,7 @@ public interface IItemRenderPreview {
                 } else if (held.getItem() instanceof ItemBlock) {
                     BlockMeta selected = BlockMeta.fromStack(held);
                     ItemStack gadget = CompatBaublesExpanded.getGadgetFromBaubles(player);
-                    if (gadget != null && !selected.block.hasTileEntity(selected.meta)) {
+                    if (gadget != null && selected != null && !selected.block.hasTileEntity(selected.meta)) {
                         ((IItemRenderPreview) gadget.getItem()).render(world, player, gadget, event.partialTicks);
                     }
                 }

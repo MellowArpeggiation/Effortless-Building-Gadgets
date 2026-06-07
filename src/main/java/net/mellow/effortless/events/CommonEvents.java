@@ -10,7 +10,6 @@ import net.mellow.effortless.blocks.BlockMeta;
 import net.mellow.effortless.buildmode.History;
 import net.mellow.effortless.compat.CompatBaublesExpanded;
 import net.mellow.effortless.items.ItemBuildingGadget;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -51,10 +50,8 @@ public class CommonEvents {
         if (gadget == null) return;
         
         ItemStack held = event.entityPlayer.getHeldItem();
-        if (held == null || !(held.getItem() instanceof ItemBlock)) return;
-
         BlockMeta selected = BlockMeta.fromStack(held);
-        if (selected.block.hasTileEntity(selected.meta)) return;
+        if (selected == null || selected.block.hasTileEntity(selected.meta)) return;
 
         if (ItemBuildingGadget.getMode(gadget).handler == null) return;
 

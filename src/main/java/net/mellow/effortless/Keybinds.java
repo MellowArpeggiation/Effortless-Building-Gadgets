@@ -34,7 +34,7 @@ public class Keybinds {
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
     public void postClientTick(ClientTickEvent event) {
-        if(event.phase != Phase.END) return;
+        if (event.phase != Phase.END) return;
 
         if (uiKey.getIsKeyPressed()) {
             EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;

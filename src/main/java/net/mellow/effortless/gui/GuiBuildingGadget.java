@@ -457,7 +457,7 @@ public class GuiBuildingGadget extends GuiScreen {
     @Override
     protected void mouseClicked(int x, int y, int key) {
         super.mouseClicked(x, y, key);
-        if(updateActions()) playClick();
+        if (updateActions()) playClick();
     }
 
     private boolean updateActions() {
