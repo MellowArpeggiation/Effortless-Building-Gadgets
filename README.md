@@ -26,8 +26,6 @@ Requires power from:
 * **HE** (NTM)
 
 ## Planned features
-* Cylinder, circle, and sphere shapes
-* Diagonal lines and walls
 * Support for ArchitectureCraft blocks
 * Cut/Copy/Paste gadgets (+rotation!)
 * (When in Bauble slot) use tools like pickaxes/shovels for shape breaking
