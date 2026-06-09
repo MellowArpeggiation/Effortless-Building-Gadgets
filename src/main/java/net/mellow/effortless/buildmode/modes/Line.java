@@ -5,13 +5,13 @@ import java.util.List;
 
 import net.mellow.effortless.blocks.BlockMeta;
 import net.mellow.effortless.blocks.BlockPos;
+import net.mellow.effortless.blocks.Vec3;
 import net.mellow.effortless.buildmode.BaseBuildMode;
 import net.mellow.effortless.buildmode.BuildModes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
 public class Line extends BaseBuildMode {
@@ -23,7 +23,7 @@ public class Line extends BaseBuildMode {
             from = BlockPos.fromRaycastSide(mop);
             if (from == null) return 0;
 
-            int placedMeta = getFinalPlacedMeta(selected, world, player, from.x, from.y, from.z, mop.sideHit, mop.hitVec);
+            int placedMeta = getFinalPlacedMeta(selected, world, player, from.x, from.y, from.z, mop.sideHit, new Vec3(mop.hitVec));
 
             stack.stackTagCompound.setTag("pos0", from.save());
             stack.stackTagCompound.setInteger("placedMeta", placedMeta);
@@ -120,8 +120,8 @@ public class Line extends BaseBuildMode {
         Criteria(Vec3 planeBound, BlockPos firstPos, Vec3 start) {
             this.planeBound = planeBound;
             this.lineBound = toLongestLine(this.planeBound, firstPos);
-            this.distToLineSq = this.lineBound.squareDistanceTo(this.planeBound);
-            this.distToPlayerSq = this.planeBound.squareDistanceTo(start);
+            this.distToLineSq = this.lineBound.distanceToSqr(this.planeBound);
+            this.distToPlayerSq = this.planeBound.distanceToSqr(start);
         }
 
         //Make it from a plane into a line
@@ -129,17 +129,17 @@ public class Line extends BaseBuildMode {
         private Vec3 toLongestLine(Vec3 boundVec, BlockPos firstPos) {
             BlockPos bound = BlockPos.containing(boundVec);
 
-            BlockPos firstToSecond = bound.subtract(firstPos);
+            BlockPos firstToSecond = firstPos.subtract(bound);
             firstToSecond = new BlockPos(Math.abs(firstToSecond.x), Math.abs(firstToSecond.y), Math.abs(firstToSecond.z));
             int longest = Math.max(firstToSecond.x, Math.max(firstToSecond.y, firstToSecond.z));
             if (longest == firstToSecond.x) {
-                return Vec3.createVectorHelper(bound.x, firstPos.y, firstPos.z);
+                return new Vec3(bound.x, firstPos.y, firstPos.z);
             }
             if (longest == firstToSecond.y) {
-                return Vec3.createVectorHelper(firstPos.x, bound.y, firstPos.z);
+                return new Vec3(firstPos.x, bound.y, firstPos.z);
             }
             if (longest == firstToSecond.z) {
-                return Vec3.createVectorHelper(firstPos.x, firstPos.y, bound.z);
+                return new Vec3(firstPos.x, firstPos.y, bound.z);
             }
             return null;
         }

@@ -7,6 +7,7 @@ import org.lwjgl.opengl.GL11;
 
 import net.mellow.effortless.blocks.BlockMeta;
 import net.mellow.effortless.blocks.BlockPos;
+import net.mellow.effortless.blocks.Vec3;
 import net.mellow.effortless.buildmode.History.HistoryBlock;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -15,7 +16,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
 public abstract class BaseBuildMode {
@@ -31,9 +31,9 @@ public abstract class BaseBuildMode {
     // x y z is the final block position, not the block it is placed on
     public static int getFinalPlacedMeta(BlockMeta selected, World world, EntityPlayer player, int x, int y, int z, int side, Vec3 hitVector) {
 
-        float subX = (float)hitVector.xCoord - (float)x;
-        float subY = (float)hitVector.yCoord - (float)y;
-        float subZ = (float)hitVector.zCoord - (float)z;
+        float subX = (float)hitVector.x - (float)x;
+        float subY = (float)hitVector.y - (float)y;
+        float subZ = (float)hitVector.z - (float)z;
 
         BlockMeta was = new BlockMeta(world.getBlock(x, y, z), world.getBlockMetadata(x, y, z));
 

@@ -5,6 +5,7 @@ import java.util.List;
 
 import net.mellow.effortless.blocks.BlockMeta;
 import net.mellow.effortless.blocks.BlockPos;
+import net.mellow.effortless.blocks.Vec3;
 import net.mellow.effortless.buildmode.BaseBuildMode;
 import net.mellow.effortless.buildmode.BuildModes;
 import net.mellow.effortless.buildmode.ModeOptions.BuildingAction;
@@ -14,7 +15,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
 public class Wall extends BaseBuildMode {
@@ -27,7 +27,7 @@ public class Wall extends BaseBuildMode {
             from = BlockPos.fromRaycastSide(mop);
             if (from == null) return 0;
 
-            int placedMeta = getFinalPlacedMeta(selected, world, player, from.x, from.y, from.z, mop.sideHit, mop.hitVec);
+            int placedMeta = getFinalPlacedMeta(selected, world, player, from.x, from.y, from.z, mop.sideHit, new Vec3(mop.hitVec));
 
             stack.stackTagCompound.setTag("pos0", from.save());
             stack.stackTagCompound.setInteger("placedMeta", placedMeta);
@@ -135,9 +135,9 @@ public class Wall extends BaseBuildMode {
 
         Criteria(Vec3 planeBound, BlockPos firstPos, Vec3 start, Vec3 look) {
             this.planeBound = planeBound;
-            this.distToPlayerSq = this.planeBound.squareDistanceTo(start);
-            Vec3 wall = this.planeBound.subtract(Vec3.createVectorHelper(firstPos.x, firstPos.y, firstPos.z));
-            this.angle = wall.xCoord * look.xCoord + wall.zCoord * look.zCoord; //dot product ignoring y (looking up/down should not affect this angle)
+            this.distToPlayerSq = this.planeBound.distanceToSqr(start);
+            Vec3 wall = this.planeBound.subtract(Vec3.atLowerCornerOf(firstPos));
+            this.angle = wall.x * look.x + wall.z * look.z; //dot product ignoring y (looking up/down should not affect this angle)
         }
 
         //check if its not behind the player and its not too close and not too far

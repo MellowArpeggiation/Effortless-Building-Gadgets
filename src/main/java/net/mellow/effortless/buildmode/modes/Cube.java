@@ -5,6 +5,7 @@ import java.util.List;
 
 import net.mellow.effortless.blocks.BlockMeta;
 import net.mellow.effortless.blocks.BlockPos;
+import net.mellow.effortless.blocks.Vec3;
 import net.mellow.effortless.buildmode.BaseBuildMode;
 import net.mellow.effortless.buildmode.BuildModes;
 import net.mellow.effortless.buildmode.ModeOptions.BuildingAction;
@@ -15,7 +16,6 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
 public class Cube extends BaseBuildMode {
@@ -29,7 +29,7 @@ public class Cube extends BaseBuildMode {
             pos0 = BlockPos.fromRaycastSide(mop);
             if (pos0 == null) return 0;
 
-            int placedMeta = getFinalPlacedMeta(selected, world, player, pos0.x, pos0.y, pos0.z, mop.sideHit, mop.hitVec);
+            int placedMeta = getFinalPlacedMeta(selected, world, player, pos0.x, pos0.y, pos0.z, mop.sideHit, new Vec3(mop.hitVec));
 
             stack.stackTagCompound.setInteger("placedMeta", placedMeta);
             stack.stackTagCompound.setTag("pos0", pos0.save());
@@ -250,14 +250,14 @@ public class Cube extends BaseBuildMode {
         HeightCriteria(Vec3 planeBound, BlockPos secondPos, Vec3 start) {
             this.planeBound = planeBound;
             this.lineBound = toLongestLine(this.planeBound, secondPos);
-            this.distToLineSq = this.lineBound.squareDistanceTo(this.planeBound);
-            this.distToPlayerSq = this.planeBound.squareDistanceTo(start);
+            this.distToLineSq = this.lineBound.distanceToSqr(this.planeBound);
+            this.distToPlayerSq = this.planeBound.distanceToSqr(start);
         }
 
         //Make it from a plane into a line, on y axis only
         private Vec3 toLongestLine(Vec3 boundVec, BlockPos secondPos) {
             BlockPos bound = BlockPos.containing(boundVec);
-            return Vec3.createVectorHelper(secondPos.x, bound.y, secondPos.z);
+            return new Vec3(secondPos.x, bound.y, secondPos.z);
         }
 
         //check if its not behind the player and its not too close and not too far

@@ -3,7 +3,6 @@ package net.mellow.effortless.blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -47,7 +46,7 @@ public class BlockPos implements Comparable<BlockPos> {
     }
 
     public static BlockPos containing(Vec3 vec) {
-        return new BlockPos(MathHelper.floor_double(vec.xCoord), MathHelper.floor_double(vec.yCoord), MathHelper.floor_double(vec.zCoord));
+        return new BlockPos(MathHelper.floor_double(vec.x), MathHelper.floor_double(vec.y), MathHelper.floor_double(vec.z));
     }
 
     public static BlockPos min(BlockPos one, BlockPos two) {

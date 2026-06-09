@@ -5,6 +5,7 @@ import java.util.List;
 
 import net.mellow.effortless.blocks.BlockMeta;
 import net.mellow.effortless.blocks.BlockPos;
+import net.mellow.effortless.blocks.Vec3;
 import net.mellow.effortless.buildmode.BaseBuildMode;
 import net.mellow.effortless.buildmode.BuildModes;
 import net.mellow.effortless.buildmode.ModeOptions.BuildingAction;
@@ -14,7 +15,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
 public class Floor extends BaseBuildMode {
@@ -27,7 +27,7 @@ public class Floor extends BaseBuildMode {
             from = BlockPos.fromRaycastSide(mop);
             if (from == null) return 0;
 
-            int placedMeta = getFinalPlacedMeta(selected, world, player, from.x, from.y, from.z, mop.sideHit, mop.hitVec);
+            int placedMeta = getFinalPlacedMeta(selected, world, player, from.x, from.y, from.z, mop.sideHit, new Vec3(mop.hitVec));
 
             stack.stackTagCompound.setTag("pos0", from.save());
             stack.stackTagCompound.setInteger("placedMeta", placedMeta);
@@ -113,7 +113,7 @@ public class Floor extends BaseBuildMode {
 
         Criteria(Vec3 planeBound, Vec3 start) {
             this.planeBound = planeBound;
-            this.distToPlayerSq = this.planeBound.squareDistanceTo(start);
+            this.distToPlayerSq = this.planeBound.distanceToSqr(start);
         }
 
         //check if its not behind the player and its not too close and not too far
