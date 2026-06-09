@@ -8,28 +8,35 @@ import net.mellow.effortless.buildmode.modes.*;
 public class ModeOptions {
     
     public static enum BuildingMode {
-        NONE(null, 0, 16), // disabled
-        EXTENDED(new Extended(), 16, 16), // greater reach
-        AIR(new Air(), 240, 16), // air placement
-        LINE(new Line(), 32, 16), // lines
-        WALL(new Wall(), 48, 16, BuildingOption.FILL), // walls
-        FLOOR(new Floor(), 64, 16, BuildingOption.FILL), // floors
-        CUBE(new Cube(), 80, 16, BuildingOption.CUBE_FILL), // miney crafta
-        DIAGONAL_LINE(new DiagonalLine(), 96, 16), // okay I think you get it now
-        DIAGONAL_WALL(new DiagonalWall(), 112, 16, BuildingOption.FILL),
-        SLOPE_FLOOR(new SlopeFloor(), 128, 16, BuildingOption.RAISED_EDGE),
-        CIRCLE(new Circle(), 144, 16, BuildingOption.CIRCLE_START, BuildingOption.FILL);
+        NONE(null, 0, 16, 0xd4de3b), // disabled
+        EXTENDED(new Extended(), 16, 16, 0xd4de3b), // greater reach
+        AIR(new Air(), 240, 16, 0xd4de3b), // air placement
+        LINE(new Line(), 32, 16, 0x0080ff), // lines
+        WALL(new Wall(), 48, 16, 0x0080ff, BuildingOption.FILL), // walls
+        FLOOR(new Floor(), 64, 16, 0x0080ff, BuildingOption.FILL), // floors
+        CUBE(new Cube(), 80, 16, 0x0080ff, BuildingOption.CUBE_FILL), // miney crafta
+        DIAGONAL_LINE(new DiagonalLine(), 96, 16, 0x8f47de), // okay I think you get it now
+        DIAGONAL_WALL(new DiagonalWall(), 112, 16, 0x8f47de, BuildingOption.FILL),
+        SLOPE_FLOOR(new SlopeFloor(), 128, 16, 0x8f47de, BuildingOption.RAISED_EDGE),
+        CIRCLE(new Circle(), 144, 16, 0x4ac24d, BuildingOption.CIRCLE_START, BuildingOption.FILL);
 
         public final BaseBuildMode handler;
         public final int iconX;
         public final int iconY;
         public final BuildingOption[] options;
+        public final int r;
+        public final int g;
+        public final int b;
 
-        private BuildingMode(BaseBuildMode handler, int iconX, int iconY, BuildingOption... options) {
+        private BuildingMode(BaseBuildMode handler, int iconX, int iconY, int color, BuildingOption... options) {
             this.handler = handler;
             this.iconX = iconX;
             this.iconY = iconY;
             this.options = options;
+
+            this.r = color >> 16;
+            this.g = color >> 8 & 0xFF;
+            this.b = color & 0xFF;
         }
         
         public String getUnlocalizedName() {

@@ -174,6 +174,7 @@ public class GuiBuildingGadget extends GuiScreen {
 
         double ringInner = 30;
         double ringOuter = 65;
+        double catLineWidth = 1;
         double gapInner = Math.PI * 0.005;
         double gapOuter = Math.PI * 0.0025;
         double radiansPer = 2 * Math.PI / modes.length;
@@ -209,6 +210,21 @@ public class GuiBuildingGadget extends GuiScreen {
             tessellator.addVertex(midX + x2m1, midY + y2m1, 0);
             tessellator.addVertex(midX + x2m2, midY + y2m2, 0);
             tessellator.addVertex(midX + x1m2, midY + y1m2, 0);
+
+
+            double catLineOuterEdge = ringInner + catLineWidth;
+
+            double x1m3 = Math.cos(begin + gapInner) * catLineOuterEdge;
+            double x2m3 = Math.cos(end - gapInner) * catLineOuterEdge;
+            double y1m3 = Math.sin(begin + gapInner) * catLineOuterEdge;
+            double y2m3 = Math.sin(end - gapInner) * catLineOuterEdge;
+
+            tessellator.setColorRGBA(mode.r, mode.g, mode.b, 200);
+
+            tessellator.addVertex(midX + x1m1, midY + y1m1, 0);
+            tessellator.addVertex(midX + x2m1, midY + y2m1, 0);
+            tessellator.addVertex(midX + x2m3, midY + y2m3, 0);
+            tessellator.addVertex(midX + x1m3, midY + y1m3, 0);
         }
 
 
