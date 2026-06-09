@@ -1,6 +1,7 @@
 package net.mellow.effortless.blocks;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockBed;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -35,8 +36,9 @@ public class BlockMeta {
 
     public static BlockMeta fromStack(ItemStack stack) {
         if (stack == null || stack.stackSize <= 0 || !(stack.getItem() instanceof ItemBlock)) return null;
-        // return new BlockMeta(((ItemBlock) stack.getItem()).field_150939_a, stack.getItem().getMetadata(stack.getItemDamage()));
-        return new BlockMeta(((ItemBlock) stack.getItem()).field_150939_a, stack.getItemDamage()); // don't transform yet
+        BlockMeta selected = new BlockMeta(((ItemBlock) stack.getItem()).field_150939_a, stack.getItemDamage()); // don't transform yet
+        if (selected.block instanceof BlockBed) return null; // EFR makes its own "ItemBLOCKBed" placement class which doesn't conform to the vanilla expectation of it not being a non-ItemBlock Item, guh
+        return selected;
     }
 
     @Override
