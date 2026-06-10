@@ -1,0 +1,40 @@
+buildingaction.undo.name=Отменить
+buildingaction.redo.name=Вернуть
+buildingaction.full.name=Полный
+buildingaction.hollow.name=Кольцо
+buildingaction.cube_full.name=Полный
+buildingaction.cube_hollow.name=Полый
+buildingaction.cube_skeleton.name=Скелет
+buildingaction.short_edge.name=Короткая кромка
+buildingaction.long_edge.name=Длинная кромка
+buildingaction.circle_start_corner.name=Угол
+buildingaction.circle_start_center.name=Центр
+
+buildingmode.none.name=Отключено
+buildingmode.none.desc=Отключает размещение гаджета
+buildingmode.extended.name=Расширенный
+buildingmode.extended.desc=Стандартная укладка блоков с увеличенным радиусом действия
+buildingmode.air.name=Воздух
+buildingmode.air.desc=Размещает блоки в воздухе
+buildingmode.line.name=Линия
+buildingmode.wall.name=Стена
+buildingmode.floor.name=Пол
+buildingmode.cube.name=Куб
+buildingmode.diagonal_line.name=Диагональная линия
+buildingmode.diagonal_wall.name=Диагональная стена
+buildingmode.slope_floor.name=Наклонный пол
+buildingmode.circle.name=Круг
+buildingmode.cylinder.name=Цилиндр
+buildingmode.sphere.name=Сфера
+
+buildingui.noblocks=Отсутствуют требуемые блоки
+
+effortless.key=Effortless Building Gadgets
+effortless.key.uiKey=Открыть интерфейс гаджета
+
+energy.stored.rf=Энергии: %s / %s RF
+energy.stored.he=Энергии: %s / %s HE
+
+hint.uikey.usage=[ Нажмите %s, чтобы настроить ]
+
+item.building_gadget.name=Строительный гаджет
