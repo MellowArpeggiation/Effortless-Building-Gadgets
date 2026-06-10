@@ -6,7 +6,7 @@ buildingaction.cube_full.name=Полный
 buildingaction.cube_hollow.name=Полый
 buildingaction.cube_skeleton.name=Каркас
 buildingaction.short_edge.name=Короткая грань
-buildingaction.long_edge.name=Длинная кгрань
+buildingaction.long_edge.name=Длинная грань
 buildingaction.circle_start_corner.name=От угла
 buildingaction.circle_start_center.name=От центра
 
