@@ -35,6 +35,6 @@ effortless.key.uiKey=Открыть интерфейс гаджета
 energy.stored.rf=Энергия: %s / %s RF
 energy.stored.he=Энергия: %s / %s HE
 
-hint.uikey.usage=[ Нажмите %s, чтобы настроить ]
+hint.uikey.usage=[ Удерживайте %s, чтобы настроить ]
 
 item.building_gadget.name=Строительный гаджет
