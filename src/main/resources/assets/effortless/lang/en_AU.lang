@@ -1,0 +1,42 @@
+buildingaction.undo.name=AH F***
+buildingaction.redo.name=put it back
+buildingaction.full.name=Chockers
+buildingaction.hollow.name=Hollow
+buildingaction.cube_full.name=Chockers
+buildingaction.cube_hollow.name=Hollow
+buildingaction.cube_skeleton.name=Rooted
+buildingaction.short_edge.name=Short Edge
+buildingaction.long_edge.name=Long Edge
+buildingaction.circle_start_corner.name=Corner
+buildingaction.circle_start_center.name=Center
+
+buildingmode.none.name=Disabled
+buildingmode.none.desc=Here for a good time not a long time
+buildingmode.extended.name=Extended
+buildingmode.extended.desc=Not here to f*** spiders
+buildingmode.air.name=Air
+buildingmode.air.desc=Wizard sh**
+buildingmode.line.name=Line
+buildingmode.line.desc=Up ya nose
+buildingmode.wall.name=Wall
+buildingmode.floor.name=Floor
+buildingmode.cube.name=Case
+buildingmode.diagonal_line.name=Diagonal Line
+buildingmode.diagonal_line.desc=§oUp ya nose
+buildingmode.diagonal_wall.name=Diagonal Wall
+buildingmode.slope_floor.name=Sloped Floor
+buildingmode.circle.name=Round Thing
+buildingmode.cylinder.name=VB Can
+buildingmode.sphere.name=Sphere
+
+buildingui.noblocks=You're absolutely rooted mate, get some blocks!
+
+effortless.key=Building Gadgets for yer RDO mate
+effortless.key.uiKey=Open the Esky mate
+
+energy.stored.rf=Caffeine Level: %s / %s RF
+energy.stored.he=Powah: %s / %s HE
+
+hint.uikey.usage=[ Hold %s to use ya galah ]
+
+item.building_gadget.name=Building Gadget
