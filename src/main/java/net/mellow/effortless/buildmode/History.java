@@ -29,8 +29,8 @@ public class History {
         redoStacks.clear();
     }
 
-    public static void addUndo(EntityPlayer player, List<HistoryBlock> blocks) {
-        History history = new History(blocks);
+    public static void addUndo(EntityPlayer player, List<HistoryBlock> blocks, BlockMeta blockItem) {
+        History history = new History(blocks, blockItem);
 
         if (!undoStacks.containsKey(player.getUniqueID())) {
             undoStacks.put(player.getUniqueID(), new FixedStack<>(new History[64]));
@@ -45,7 +45,7 @@ public class History {
         FixedStack<History> undoStack = undoStacks.get(player.getUniqueID());
 		if (undoStack.isEmpty()) return false;
         History blockSet = undoStack.pop();
-        if (blockSet == null) return false;
+        if (blockSet == null || blockSet.state.length == 0) return false;
 
         int blocksReturned = 0;
         List<HistoryBlock> redoBlocks = new ArrayList<>();
@@ -68,21 +68,20 @@ public class History {
         if (!player.capabilities.isCreativeMode) {
             while (blocksReturned > 0) {
                 // TODO: separate itemstacks by blocks if we add block randomisation
-                BlockMeta type = blockSet.state[0].isNow;
                 int size = Math.min(blocksReturned, 64);
-                ItemStack toReturn = new ItemStack(type.block, size, type.meta);
+                ItemStack toReturn = new ItemStack(blockSet.blockItem.block, size, blockSet.blockItem.meta);
                 player.inventory.addItemStackToInventory(toReturn);
                 blocksReturned -= size;
             }
         }
 
-        addRedo(player, redoBlocks);
+        addRedo(player, redoBlocks, blockSet.blockItem);
 
         return true;
     }
 
-    public static void addRedo(EntityPlayer player, List<HistoryBlock> blocks) {
-        History history = new History(blocks);
+    public static void addRedo(EntityPlayer player, List<HistoryBlock> blocks, BlockMeta blockItem) {
+        History history = new History(blocks, blockItem);
 
         if (!redoStacks.containsKey(player.getUniqueID())) {
             redoStacks.put(player.getUniqueID(), new FixedStack<>(new History[64]));
@@ -97,13 +96,13 @@ public class History {
         FixedStack<History> redoStack = redoStacks.get(player.getUniqueID());
 		if (redoStacks.isEmpty()) return false;
         History blockSet = redoStack.pop();
-        if (blockSet == null) return false;
+        if (blockSet == null || blockSet.state.length == 0) return false;
 
         boolean useItems = !player.capabilities.isCreativeMode;
         
         ItemStack toDeplete = null;
         if (useItems) {
-            toDeplete = BaseBuildMode.getMatchingStack(player, blockSet.state[0].type);
+            toDeplete = BaseBuildMode.getMatchingStack(player, blockSet.blockItem);
             if (toDeplete == null) return false;
         }
 
@@ -121,7 +120,7 @@ public class History {
             
             if (useItems) {
                 if (toDeplete == null || toDeplete.stackSize <= 0) {
-                    toDeplete = BaseBuildMode.getMatchingStack(player, blockSet.state[0].type);
+                    toDeplete = BaseBuildMode.getMatchingStack(player, blockSet.blockItem);
 
                     if (toDeplete == null) {
                         break;
@@ -135,19 +134,21 @@ public class History {
             world.setBlock(x, y, z, step.type.block, step.type.meta, 3);
         }
 
-        addUndo(player, undoBlocks);
+        addUndo(player, undoBlocks, blockSet.blockItem);
 
         BaseBuildMode.cleanInventory(player);
 
         return true;
     }
 
-    public History(List<HistoryBlock> blocks) {
+    public History(List<HistoryBlock> blocks, BlockMeta blockItem) {
         this.state = blocks.toArray(new HistoryBlock[blocks.size()]);
+        this.blockItem = blockItem;
     }
 
     // gonna try to be somewhat efficient with memory usage here
     public final HistoryBlock[] state;
+    public final BlockMeta blockItem;
     
     public static final class HistoryBlock {
 

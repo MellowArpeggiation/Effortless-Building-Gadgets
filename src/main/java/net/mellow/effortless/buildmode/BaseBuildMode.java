@@ -56,6 +56,7 @@ public abstract class BaseBuildMode {
 
     // selected - the block selected by the tool
     // toPlace  - the transformed block to be placed into the world
+    // TODO refactor `selected`/`toPlace`/`placedMeta` to be more well contained, easier to grok, right now placedMeta is a bit of a hack
     public static int build(World world, EntityPlayer player, BlockMeta selected, int placedMeta, List<BlockPos> positions, boolean replaceAny) {
         if (world.isRemote) return 0;
         if (positions == null || positions.isEmpty()) return 0;
@@ -103,7 +104,7 @@ public abstract class BaseBuildMode {
             blocksPlaced++;
         }
 
-        History.addUndo(player, previousState);
+        History.addUndo(player, previousState, selected);
 
         cleanInventory(player);
 
