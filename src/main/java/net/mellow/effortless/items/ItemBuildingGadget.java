@@ -4,6 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import appeng.api.features.IWirelessTermHandler;
+import appeng.api.util.AEColor;
+import appeng.api.util.IConfigManager;
+import com.gtnewhorizon.gtnhlib.item.ItemStackNBT;
+import cpw.mods.fml.common.FMLLog;
+import net.mellow.effortless.compat.CompatAE2;
 import org.lwjgl.input.Keyboard;
 
 import api.hbm.energymk2.IBatteryItem;
@@ -39,12 +45,15 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 
+import static net.mellow.effortless.compat.CompatAE2.hasAE2;
+
 @Optional.InterfaceList({
     @Optional.Interface(iface = "cofh.api.energy.IEnergyContainerItem", modid = Compat.MODID_COFH),
     @Optional.Interface(iface = "api.hbm.energymk2.IBatteryItem", modid = Compat.MODID_NTM),
     @Optional.Interface(iface = "baubles.api.expanded.IBaubleExpanded", modid = Compat.MODID_BAUBLES),
+    @Optional.Interface(iface = "appeng.api.features.IWirelessTermHandler", modid = Compat.MODID_AE2)
 })
-public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRenderPreview, IItemGuiProvider, IItemControlReceiver, IEnergyContainerItem, IBatteryItem, IBaubleExpanded {
+public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRenderPreview, IItemGuiProvider, IItemControlReceiver, IEnergyContainerItem, IBatteryItem, IBaubleExpanded, IWirelessTermHandler {
 
     // why ItemFlintAndSteel?
     // A bunch of mods like Adventure Backpacks use these classes to determine if something is a "tool",
@@ -52,6 +61,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
 
     private static boolean hasRF;
     private static boolean hasHE;
+
 
     static {
         try {
@@ -76,10 +86,16 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         if (hasRF) list.add(chargeFormat + I18n.format("energy.stored.rf", MathUtil.getShortNumber(getEnergyStored(stack)), MathUtil.getShortNumber(getMaxEnergyStored(stack))));
         if (hasHE) list.add(chargeFormat + I18n.format("energy.stored.he", MathUtil.getShortNumber(getCharge(stack)), MathUtil.getShortNumber(getMaxCharge(stack))));
         list.add(EnumChatFormatting.YELLOW + I18n.format("hint.uikey.usage", Keyboard.getKeyName(Keybinds.uiKey.getKeyCode())));
+        if (hasAE2) {
+            final String encKey = ItemStackNBT.getString(stack, "encryptionKey");
+            if(encKey == null || encKey.isEmpty()){
+                list.add(EnumChatFormatting.RED + I18n.format("status.unlinked"));
+            }
+            else list.add(EnumChatFormatting.RED + I18n.format("status.linked"));
+        }
     }
 
     public static boolean isRenderingOverlay = true;
-
     @Override
     public String getItemStackDisplayName(ItemStack stack) {
         if (isRenderingOverlay) {
@@ -288,7 +304,6 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
 
     @Override
     public void dischargeBattery(ItemStack stack, long energy) {
-        
     }
 
     @Override
@@ -341,5 +356,62 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
     public String[] getBaubleTypes(ItemStack stack) {
         return new String[] { BaubleExpandedSlots.charmType };
     }
+    @Optional.Method(modid = Compat.MODID_AE2)
+    @Override
+    public boolean canHandle(ItemStack is) {
+        return true;
+    }
+    @Optional.Method(modid = Compat.MODID_AE2)
+    @Override
+    public boolean usePower(EntityPlayer player, double amount, ItemStack is) {
+        if (is.stackTagCompound == null) is.stackTagCompound = new NBTTagCompound();
+        int currentEnergy = getEnergyStored(is);
+        int toDeduct = (int) Math.ceil(amount * 2);
+        if (currentEnergy >= toDeduct) {
+            is.stackTagCompound.setInteger("energy", currentEnergy - toDeduct);
+            return true;
+        }
+        return false;
+    }
+    @Optional.Method(modid = Compat.MODID_AE2)
+    @Override
+    public boolean hasPower(EntityPlayer player, double amount, ItemStack is) {
+        int energy = is.stackTagCompound.getInteger("energy");
+        return energy > capacity / 10;
+    }
+    @Optional.Method(modid = Compat.MODID_AE2)
+    @Override
+    public IConfigManager getConfigManager(ItemStack is) {
+        return null;
+    }
+    @Optional.Method(modid = Compat.MODID_AE2)
+    @Override
+    public String getEncryptionKey(ItemStack item) {
+        return ItemStackNBT.getString(item, "encryptionKey");
+    }
+    @Optional.Method(modid = Compat.MODID_AE2)
+    @Override
+    public void setEncryptionKey(ItemStack item, String encKey, String name) {
+        final NBTTagCompound data = ItemStackNBT.get(item);
+        final NBTTagCompound keys = data.getCompoundTag("encryptionKeys");
 
+        if (!keys.hasKey(AEColor.values()[0].name()) && data.hasKey("encryptionKey")) {
+            keys.setString(AEColor.values()[0].name(), data.getString("encryptionKey"));
+        }
+
+        String freeKey = "";
+        for (int i = 0; i < 16; i++) {
+            final String key = AEColor.values()[i].name();
+            if (keys.hasKey(key)) {
+                if (keys.getString(key).equals(encKey)) return;
+            } else {
+                freeKey = key;
+                break;
+            }
+        }
+        if (freeKey.isEmpty()) return;
+        keys.setString(freeKey, encKey);
+        data.setTag("encryptionKeys", keys);
+        ItemStackNBT.of(item).setString("encryptionKey", encKey).setString("name", name);
+    }
 }

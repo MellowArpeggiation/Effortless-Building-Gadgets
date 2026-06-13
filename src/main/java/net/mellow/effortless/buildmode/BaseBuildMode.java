@@ -3,10 +3,15 @@ package net.mellow.effortless.buildmode;
 import java.util.ArrayList;
 import java.util.List;
 
+import appeng.api.storage.data.IAEItemStack;
+import appeng.api.storage.data.IItemList;
+import appeng.util.item.AEItemStack;
 import net.mellow.effortless.blocks.BlockMeta;
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.buildmode.History.HistoryBlock;
+import net.mellow.effortless.compat.CompatAE2;
+import net.mellow.effortless.items.ItemBuildingGadget;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -16,7 +21,7 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 
 public abstract class BaseBuildMode {
-    
+
     public abstract int add(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop);
     public abstract void clear(ItemStack stack);
 
@@ -56,9 +61,14 @@ public abstract class BaseBuildMode {
             if (useItems) {
                 if (toDeplete == null || toDeplete.stackSize <= 0) {
                     toDeplete = getMatchingStack(player, selected);
-
                     if (toDeplete == null) {
                         break;
+                    }
+                    if (CompatAE2.hasAE2){
+                        CompatAE2.removeFromNetwork(player, selected, toDeplete.stackSize);
+                        IItemList<IAEItemStack> itemList = CompatAE2.getItemList(player);
+                        if (itemList == null) break;
+                        if (itemList.isEmpty()) break;
                     }
                 }
 
@@ -70,7 +80,6 @@ public abstract class BaseBuildMode {
 
             blocksPlaced++;
         }
-
         History.addUndo(player, previousState, selected);
 
         cleanInventory(player);
@@ -93,7 +102,9 @@ public abstract class BaseBuildMode {
                 return stack;
             }
         }
-
+        if (CompatAE2.hasAE2){
+            return CompatAE2.findItemInNetwork(selected, player);
+        }
         return null;
     }
 
@@ -123,7 +134,7 @@ public abstract class BaseBuildMode {
     }
 
     public static String highlightTitle;
-    
+
     public String getItemHighlight(ItemStack stack) {
         if (highlightTitle == null) return null;
 
