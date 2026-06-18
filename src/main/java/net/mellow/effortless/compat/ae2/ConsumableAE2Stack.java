@@ -15,6 +15,11 @@ import appeng.util.item.AEItemStack;
 
 public class ConsumableAE2Stack implements IConsumableStack {
 
+    // my kingdom for a `yield` that works like C#
+    // because otherwise I have to do either THIS stupid shit
+    // or another - more complicated - yet still stupid shit
+    public static boolean hasChecked = false;
+
     private final IAEItemStack stack;
     private long amountConsumed = 0;
 

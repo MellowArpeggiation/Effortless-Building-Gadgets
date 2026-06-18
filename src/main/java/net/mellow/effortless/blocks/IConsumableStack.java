@@ -26,7 +26,8 @@ public interface IConsumableStack {
         }
         
         // any other wacky inventories next
-        if (CompatAE2.loaded) {
+        if (CompatAE2.loaded && !ConsumableAE2Stack.hasChecked) {
+            ConsumableAE2Stack.hasChecked = true;
             IConsumableStack ae2Stack = getAE2Stack(player, selected, maximumToPlace);
             if (ae2Stack != null) return ae2Stack;
         }
@@ -47,6 +48,8 @@ public interface IConsumableStack {
         for (IConsumableStack consumable : toFlush) {
             consumable.flush();
         }
+
+        ConsumableAE2Stack.hasChecked = false;
 
         player.inventoryContainer.detectAndSendChanges();
     }
