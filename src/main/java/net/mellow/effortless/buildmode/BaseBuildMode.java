@@ -3,13 +3,11 @@ package net.mellow.effortless.buildmode;
 import java.util.ArrayList;
 import java.util.List;
 
-import cpw.mods.fml.common.Loader;
 import net.mellow.effortless.blocks.BlockMeta;
 import net.mellow.effortless.blocks.BlockPos;
+import net.mellow.effortless.blocks.IConsumableStack;
 import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.buildmode.History.HistoryBlock;
-import net.mellow.effortless.compat.Compat;
-import net.mellow.effortless.compat.CompatAE2;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -24,8 +22,6 @@ public abstract class BaseBuildMode {
     public abstract int add(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop);
     public abstract void clear(ItemStack stack);
 
-    public static boolean hasAE2 = Loader.isModLoaded(Compat.MODID_AE2);
-
     public int reach(ItemStack stack) {
         return 32;
     }
@@ -39,10 +35,15 @@ public abstract class BaseBuildMode {
         boolean useItems = !player.capabilities.isCreativeMode;
 
         List<HistoryBlock> previousState = new ArrayList<>();
-        ItemStack toDeplete = null;
+
+        List<IConsumableStack> depletedStacks = new ArrayList<>();
+        IConsumableStack toDeplete = null;
+
         if (useItems) {
-            toDeplete = getMatchingStack(player, selected);
+            toDeplete = IConsumableStack.getMatchingStack(player, selected);
             if (toDeplete == null) return 0;
+
+            depletedStacks.add(toDeplete);
         }
 
         int blocksPlaced = 0;
@@ -60,22 +61,17 @@ public abstract class BaseBuildMode {
             if (!world.checkNoEntityCollision(bb, player)) continue;
 
             if (useItems) {
-                if (toDeplete == null || toDeplete.stackSize <= 0) {
-                    toDeplete = getMatchingStack(player, selected);
-                    if (toDeplete == null) {
-                        break;
-                    }
+                if (toDeplete == null) {
+                    toDeplete = IConsumableStack.getMatchingStack(player, selected);
+                    if (toDeplete == null) break;
+
+                    depletedStacks.add(toDeplete);
                 }
 
-                ItemStack stack = getMatchingStack(player, selected);
-                if (hasAE2) {
-                    if (stack == null) break;
-                    int itemsLeft = stack.stackSize;
-                    if (itemsLeft <= 0) break;
-                    CompatAE2.removeFromNetwork(player, selected);
+                // Eat a block, returning true indicates the consumable is finished
+                if (toDeplete.consumeOne()) {
+                    toDeplete = null;
                 }
-
-                toDeplete.stackSize--;
             }
 
             previousState.add(new HistoryBlock(new BlockMeta(block, meta), selected.place, new BlockPos(pos.x, pos.y, pos.z)));
@@ -94,7 +90,9 @@ public abstract class BaseBuildMode {
         }
         History.addUndo(player, previousState, selected);
 
-        cleanInventory(player);
+        if (useItems) {
+            IConsumableStack.cleanInventory(player, depletedStacks);
+        }
 
         world.playSoundEffect(player.posX, player.posY, player.posZ, selected.place.block.stepSound.func_150496_b(), (selected.place.block.stepSound.getVolume() + 1.0F) / 2.0F, selected.place.block.stepSound.getPitch() * 0.8F);
 
@@ -105,29 +103,6 @@ public abstract class BaseBuildMode {
         List<BlockPos> list = new ArrayList<>();
         list.add(position);
         return build(world, player, selected, list, replaceAny);
-    }
-
-    public static ItemStack getMatchingStack(EntityPlayer player, PlaceableStack selected) {
-        for (int i = player.inventory.mainInventory.length - 1; i >= 0; i--) {
-            ItemStack stack = player.inventory.mainInventory[i];
-            if (PlaceableStack.stackMatches(stack, selected.stack)) {
-                return stack;
-            }
-        }
-        if (hasAE2) {
-            return CompatAE2.findItemInNetwork(selected, player);
-        }
-        return null;
-    }
-
-    // Vanilla doesn't handle empty stacks automatically, this is a (shit) solution to that
-    public static void cleanInventory(EntityPlayer player) {
-        for (int i = 0; i < player.inventory.mainInventory.length; i++) {
-            ItemStack stack = player.inventory.mainInventory[i];
-            if (stack != null && stack.stackSize <= 0) player.inventory.mainInventory[i] = null;
-        }
-
-        player.inventoryContainer.detectAndSendChanges();
     }
 
     public abstract void render(ItemStack stack, World world, EntityPlayer player, float partialTicks);

@@ -28,6 +28,8 @@ import net.minecraftforge.common.util.ForgeDirection;
 import java.util.Collection;
 
 public class CompatAE2 {
+
+    public static boolean loaded = Loader.isModLoaded(Compat.MODID_AE2);
     
     @Optional.Method(modid = Compat.MODID_AE2)
     public static ItemStack findItemInNetwork(PlaceableStack selected, EntityPlayer player) {
@@ -41,7 +43,7 @@ public class CompatAE2 {
         if (matchingStack == null || matchingStack.isEmpty()) return null;
 
         IAEItemStack AE2foundItem = matchingStack.iterator().next();
-        ItemStack foundStack = toItemStack(AE2foundItem);
+        ItemStack foundStack = AE2foundItem.getItemStack();
         if (!PlaceableStack.stackMatches(foundStack, selected.stack)) return null;
 
         return foundStack;
@@ -149,16 +151,12 @@ public class CompatAE2 {
         return AEApi.instance().storage().createItemStack(stack);
     }
 
-    private static ItemStack toItemStack(IAEItemStack itemStack) {
-        return itemStack.getItemStack();
-    }
-
     private static IMEMonitor<IAEItemStack> getInventory(EntityPlayer player){
         IStorageGrid sg = getStorageFromTerminal(player);
         if (sg == null) return null;
         return sg.getItemInventory();
     }
-    
+
     public static IItemList<IAEItemStack> getItemList(EntityPlayer player){
         IMEMonitor<IAEItemStack> inventory = getInventory(player);
         if (inventory != null) return inventory.getStorageList();

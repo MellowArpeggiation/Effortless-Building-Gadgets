@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import net.mellow.effortless.blocks.BlockMeta;
 import net.mellow.effortless.blocks.BlockPos;
+import net.mellow.effortless.blocks.IConsumableStack;
 import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.util.FixedStack;
 import net.minecraft.entity.player.EntityPlayer;
@@ -100,11 +101,15 @@ public class History {
         if (blockSet == null || blockSet.state.length == 0) return false;
 
         boolean useItems = !player.capabilities.isCreativeMode;
-        
-        ItemStack toDeplete = null;
+
+        List<IConsumableStack> depletedStacks = new ArrayList<>();
+        IConsumableStack toDeplete = null;
+
         if (useItems) {
-            toDeplete = BaseBuildMode.getMatchingStack(player, blockSet.placed);
+            toDeplete = IConsumableStack.getMatchingStack(player, blockSet.placed);
             if (toDeplete == null) return false;
+
+            depletedStacks.add(toDeplete);
         }
 
         List<HistoryBlock> undoBlocks = new ArrayList<>();
@@ -118,17 +123,19 @@ public class History {
 
             if (!current.equals(step.isNow)) continue; // only redo blocks that haven't changed
             if (current.equals(step.type)) continue; // only place blocks that aren't already the current type
-            
-            if (useItems) {
-                if (toDeplete == null || toDeplete.stackSize <= 0) {
-                    toDeplete = BaseBuildMode.getMatchingStack(player, blockSet.placed);
 
-                    if (toDeplete == null) {
-                        break;
-                    }
+            if (useItems) {
+                if (toDeplete == null) {
+                    toDeplete = IConsumableStack.getMatchingStack(player, blockSet.placed);
+                    if (toDeplete == null) break;
+
+                    depletedStacks.add(toDeplete);
                 }
 
-                toDeplete.stackSize--;
+                // Eat a block, returning true indicates the consumable is finished
+                if (toDeplete.consumeOne()) {
+                    toDeplete = null;
+                }
             }
 
             undoBlocks.add(new HistoryBlock(current, step.type, step.pos));
@@ -146,7 +153,9 @@ public class History {
 
         addUndo(player, undoBlocks, blockSet.placed);
 
-        BaseBuildMode.cleanInventory(player);
+        if (useItems) {
+            IConsumableStack.cleanInventory(player, depletedStacks);
+        }
 
         return true;
     }
