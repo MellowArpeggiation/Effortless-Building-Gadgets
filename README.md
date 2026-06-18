@@ -27,6 +27,7 @@ Place blocks in all sorts of different shapes, automatically replacing any soft 
 
 You can also:
 * Undo + Redo up to 64 edits
+* Automatically pull blocks from AE2 storage, if you have an active wireless terminal
 
 Will not function with any blocks that place with tile entities, except for special decorative blocks (like ArchitectureCraft/Carpenter's blocks)
 
@@ -39,8 +40,6 @@ Requires power from:
 * (When in Bauble slot) use tools like pickaxes/shovels for shape breaking
 * Shape breaking blocks placed in session (or any, if in creative)
 * Modifiers from Effortless like Mirror, Array, etc
-* AE2 compatibility (pulling blocks from storage)
-    * Potentially compatibility for any mods adding handheld storage + backpacks?
 * Chisel compatibility (automatically chiseling blocks in inventory/storage to place)
 * More configuration for existing tools (air placement distance, etc)
 * Block randomisation
