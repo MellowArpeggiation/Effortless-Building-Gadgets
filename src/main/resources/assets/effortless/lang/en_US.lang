@@ -37,8 +37,5 @@ energy.stored.he=Power: %s / %s HE
 
 hint.uikey.usage=[ Hold %s to configure ]
 
-status.unlinked=[Unlinked!]
-status.linked=[Linked!]
-
 item.building_gadget.name=Building Gadget
 item.building_gadget.bauble=Can be placed into a bauble slot

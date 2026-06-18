@@ -9,7 +9,7 @@ import net.minecraft.item.ItemStack;
 
 public class CompatBaublesExpanded {
     
-    public static boolean initialised;
+    public static boolean loaded;
     public static int[] gadgetSlotIds;
 
     public static void preInit() {
@@ -18,11 +18,11 @@ public class CompatBaublesExpanded {
 
     public static void postInit() {
         gadgetSlotIds = BaubleExpandedSlots.getIndexesOfAssignedSlotsOfType(BaubleExpandedSlots.charmType);
-        initialised = true;
+        loaded = true;
     }
 
     public static ItemStack getGadgetFromBaubles(EntityPlayer player) {
-        if (!initialised) return null;
+        if (!loaded) return null;
         
         for (int slotIndex : gadgetSlotIds) {
             ItemStack gadget = BaublesApi.getBaubles(player).getStackInSlot(slotIndex);
@@ -34,7 +34,7 @@ public class CompatBaublesExpanded {
     }
 
     public static void syncBaubles(EntityPlayer player) {
-        if (!initialised) return;
+        if (!loaded) return;
         EventHandlerNetwork.syncBaubles(player);
     }
 

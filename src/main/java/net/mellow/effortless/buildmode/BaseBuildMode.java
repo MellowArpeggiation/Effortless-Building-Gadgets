@@ -3,7 +3,6 @@ package net.mellow.effortless.buildmode;
 import java.util.ArrayList;
 import java.util.List;
 
-import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Loader;
 import net.mellow.effortless.blocks.BlockMeta;
 import net.mellow.effortless.blocks.BlockPos;
@@ -24,7 +23,9 @@ public abstract class BaseBuildMode {
 
     public abstract int add(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop);
     public abstract void clear(ItemStack stack);
+
     public static boolean hasAE2 = Loader.isModLoaded(Compat.MODID_AE2);
+
     public int reach(ItemStack stack) {
         return 32;
     }
@@ -59,21 +60,21 @@ public abstract class BaseBuildMode {
             if (!world.checkNoEntityCollision(bb, player)) continue;
 
             if (useItems) {
-                FMLLog.info("Use items reached!");
                 if (toDeplete == null || toDeplete.stackSize <= 0) {
-                    FMLLog.info("second check reached!");
                     toDeplete = getMatchingStack(player, selected);
                     if (toDeplete == null) {
                         break;
                     }
                 }
+
                 ItemStack stack = getMatchingStack(player, selected);
-                if (hasAE2){
+                if (hasAE2) {
                     if (stack == null) break;
                     int itemsLeft = stack.stackSize;
-                    if (itemsLeft <=0) break;
+                    if (itemsLeft <= 0) break;
                     CompatAE2.removeFromNetwork(player, selected);
                 }
+
                 toDeplete.stackSize--;
             }
 
@@ -113,7 +114,7 @@ public abstract class BaseBuildMode {
                 return stack;
             }
         }
-        if (hasAE2){
+        if (hasAE2) {
             return CompatAE2.findItemInNetwork(selected, player);
         }
         return null;

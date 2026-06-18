@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.gtnewhorizon.gtnhlib.item.ItemStackNBT;
-import net.mellow.effortless.compat.CompatAE2;
 import org.lwjgl.input.Keyboard;
 
 import api.hbm.energymk2.IBatteryItem;
@@ -42,13 +40,12 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 
-
 @Optional.InterfaceList({
     @Optional.Interface(iface = "cofh.api.energy.IEnergyContainerItem", modid = Compat.MODID_COFH),
     @Optional.Interface(iface = "api.hbm.energymk2.IBatteryItem", modid = Compat.MODID_NTM),
     @Optional.Interface(iface = "baubles.api.expanded.IBaubleExpanded", modid = Compat.MODID_BAUBLES),
 })
-public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRenderPreview, IItemGuiProvider, IItemControlReceiver, IEnergyContainerItem, IBatteryItem, IBaubleExpanded{
+public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRenderPreview, IItemGuiProvider, IItemControlReceiver, IEnergyContainerItem, IBatteryItem, IBaubleExpanded {
 
     // why ItemFlintAndSteel?
     // A bunch of mods like Adventure Backpacks use these classes to determine if something is a "tool",
@@ -81,9 +78,11 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
             if (hasRF) list.add(chargeFormat + I18n.format("energy.stored.rf", MathUtil.getShortNumber(getEnergyStored(stack)), MathUtil.getShortNumber(getMaxEnergyStored(stack))));
             if (hasHE) list.add(chargeFormat + I18n.format("energy.stored.he", MathUtil.getShortNumber(getCharge(stack)), MathUtil.getShortNumber(getMaxCharge(stack))));
         }
-        if (CompatBaublesExpanded.initialised) {
+
+        if (CompatBaublesExpanded.loaded) {
             list.add(EnumChatFormatting.GRAY + I18n.format("item.building_gadget.bauble"));
         }
+
         list.add(EnumChatFormatting.YELLOW + I18n.format("hint.uikey.usage", Keyboard.getKeyName(Keybinds.uiKey.getKeyCode())));
     }
 
@@ -292,8 +291,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
     }
 
     @Override
-    public void dischargeBattery(ItemStack stack, long energy) {
-    }
+    public void dischargeBattery(ItemStack stack, long energy) {}
 
     @Override
     public long getCharge(ItemStack stack) {
