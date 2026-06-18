@@ -40,7 +40,7 @@ public abstract class BaseBuildMode {
         IConsumableStack toDeplete = null;
 
         if (useItems) {
-            toDeplete = IConsumableStack.getMatchingStack(player, selected);
+            toDeplete = IConsumableStack.getMatchingStack(player, selected, positions.size());
             if (toDeplete == null) return 0;
 
             depletedStacks.add(toDeplete);
@@ -62,7 +62,7 @@ public abstract class BaseBuildMode {
 
             if (useItems) {
                 if (toDeplete == null) {
-                    toDeplete = IConsumableStack.getMatchingStack(player, selected);
+                    toDeplete = IConsumableStack.getMatchingStack(player, selected, positions.size() - blocksPlaced);
                     if (toDeplete == null) break;
 
                     depletedStacks.add(toDeplete);

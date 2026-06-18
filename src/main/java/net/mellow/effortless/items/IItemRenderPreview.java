@@ -34,8 +34,8 @@ public interface IItemRenderPreview {
             ItemStack held = player.getHeldItem();
 
             if (held != null) {
-                if (held.getItem() instanceof IItemRenderPreview) {
-                    ((IItemRenderPreview) held.getItem()).render(world, player, held, event.partialTicks);
+                if (held.getItem() instanceof IItemRenderPreview preview) {
+                    preview.render(world, player, held, event.partialTicks);
                 } else if (held.getItem() instanceof ItemBlock) {
                     ItemStack gadget = CompatBaublesExpanded.getGadgetFromBaubles(player);
                     if (gadget != null && PlaceableStack.isPlaceable(held)) {

@@ -106,13 +106,15 @@ public class History {
         IConsumableStack toDeplete = null;
 
         if (useItems) {
-            toDeplete = IConsumableStack.getMatchingStack(player, blockSet.placed);
+            toDeplete = IConsumableStack.getMatchingStack(player, blockSet.placed, blockSet.state.length);
             if (toDeplete == null) return false;
 
             depletedStacks.add(toDeplete);
         }
 
         List<HistoryBlock> undoBlocks = new ArrayList<>();
+
+        int blocksPlaced = 0;
 
         for (HistoryBlock step : blockSet.state) {
             int x = step.pos.x;
@@ -126,7 +128,7 @@ public class History {
 
             if (useItems) {
                 if (toDeplete == null) {
-                    toDeplete = IConsumableStack.getMatchingStack(player, blockSet.placed);
+                    toDeplete = IConsumableStack.getMatchingStack(player, blockSet.placed, blockSet.state.length - blocksPlaced);
                     if (toDeplete == null) break;
 
                     depletedStacks.add(toDeplete);
@@ -149,6 +151,8 @@ public class History {
                 tile.markDirty();
             }
             world.markBlockForUpdate(x, y, z);
+
+            blocksPlaced++;
         }
 
         addUndo(player, undoBlocks, blockSet.placed);

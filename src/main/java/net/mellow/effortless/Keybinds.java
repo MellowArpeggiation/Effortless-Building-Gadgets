@@ -40,8 +40,8 @@ public class Keybinds {
             EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
 
             ItemStack held = player.getHeldItem();
-            if (held != null && held.getItem() instanceof IItemGuiProvider) {
-                ((IItemGuiProvider) held.getItem()).provideGui(held, player, held);
+            if (held != null && held.getItem() instanceof IItemGuiProvider provider) {
+                provider.provideGui(held, player, held);
             } else if (held == null || held.getItem() instanceof ItemBlock) {
                 ItemStack gadget = CompatBaublesExpanded.getGadgetFromBaubles(player);
                 if (gadget != null && (held == null || PlaceableStack.isPlaceable(held))) {
