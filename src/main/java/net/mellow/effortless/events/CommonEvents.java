@@ -12,11 +12,15 @@ import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.Phase;
 import cpw.mods.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import net.mellow.effortless.blocks.PlaceableStack;
+import net.mellow.effortless.buildmode.BuildModes;
 import net.mellow.effortless.buildmode.History;
+import net.mellow.effortless.buildmode.ModeOptions.BuildingMode;
 import net.mellow.effortless.compat.CompatBaublesExpanded;
 import net.mellow.effortless.items.ItemBuildingGadget;
+import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
@@ -56,7 +60,8 @@ public class CommonEvents {
         ItemStack held = event.entityPlayer.getHeldItem();
         if (!PlaceableStack.isPlaceable(held)) return;
 
-        if (ItemBuildingGadget.getMode(gadget).handler == null) return;
+        BuildingMode mode = ItemBuildingGadget.getMode(gadget);
+        if (mode.handler == null) return;
 
         ItemBuildingGadget gadgetItem = (ItemBuildingGadget) gadget.getItem();
 
@@ -69,8 +74,35 @@ public class CommonEvents {
 
                 if (!event.world.isRemote) event.setCanceled(true);
             }
-        } else {
+        } else if (event.action == Action.RIGHT_CLICK_AIR) {
             gadgetItem.onItemRightClick(gadget, event.world, event.entityPlayer, held.copy());
+
+            event.useBlock = Result.DENY;
+            event.useItem = Result.DENY;
+
+            if (!event.world.isRemote) event.setCanceled(true);
+        } else {
+            // recreate the block interaction and then cancel the regular block interaction!
+            boolean result = false;
+            
+            if (!mode.handler.isPlacing(gadget)) {
+                Block block = event.world.getBlock(event.x, event.y, event.z);
+                boolean useBlock = !event.entityPlayer.isSneaking() || event.entityPlayer.getHeldItem() == null;
+                if (!useBlock) useBlock = event.entityPlayer.getHeldItem().getItem().doesSneakBypassUse(event.world, event.x, event.y, event.z, event.entityPlayer);
+    
+                // Recreate the block interaction, unfortunately we have to fire _yet another raytrace_ because the dumbass forge event doesn't pass the exact hit location
+                if (useBlock) {
+                    MovingObjectPosition mop = BuildModes.getMop(event.entityPlayer, 16);
+                    float subX = (float)mop.hitVec.xCoord - (float)event.x;
+                    float subY = (float)mop.hitVec.yCoord - (float)event.y;
+                    float subZ = (float)mop.hitVec.zCoord - (float)event.z;
+                    result = block.onBlockActivated(event.world, event.x, event.y, event.z, event.entityPlayer, event.face, subX, subY, subZ);
+                }
+            }
+
+            if (!result) {
+                gadgetItem.onItemRightClick(gadget, event.world, event.entityPlayer, held.copy());
+            }
 
             event.useBlock = Result.DENY;
             event.useItem = Result.DENY;

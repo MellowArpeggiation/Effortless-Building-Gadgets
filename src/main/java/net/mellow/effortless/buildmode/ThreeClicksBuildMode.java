@@ -67,6 +67,11 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
     }
 
     @Override
+    public boolean isPlacing(ItemStack stack) {
+        return stack.stackTagCompound.hasKey("pos0");
+    }
+
+    @Override
     public void render(ItemStack stack, World world, EntityPlayer player, float partialTicks) {
         BlockPos pos0 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
         BlockPos pos1 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos1"));

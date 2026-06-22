@@ -24,10 +24,8 @@ public class Extended extends BaseBuildMode {
         return build(world, player, place, pos, false);
     }
 
-    @Override
-    public boolean clear(ItemStack stack) {
-        return false;
-    }
+    @Override public boolean clear(ItemStack stack) { return false; }
+    @Override public boolean isPlacing(ItemStack stack) { return false; }
 
     @Override
     public void render(ItemStack stack, World world, EntityPlayer player, float partialTicks) {

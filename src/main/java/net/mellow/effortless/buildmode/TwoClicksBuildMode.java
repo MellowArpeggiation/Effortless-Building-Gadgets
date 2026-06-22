@@ -58,6 +58,11 @@ public abstract class TwoClicksBuildMode extends BaseBuildMode {
     }
 
     @Override
+    public boolean isPlacing(ItemStack stack) {
+        return stack.stackTagCompound.hasKey("pos0");
+    }
+
+    @Override
     public void render(ItemStack stack, World world, EntityPlayer player, float partialTicks) {
         BlockPos from = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
 
