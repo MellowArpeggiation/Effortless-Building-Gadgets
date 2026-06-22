@@ -20,7 +20,7 @@ import net.minecraft.world.World;
 public abstract class BaseBuildMode {
 
     public abstract int add(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop);
-    public abstract void clear(ItemStack stack);
+    public abstract boolean clear(ItemStack stack);
 
     public int reach(ItemStack stack) {
         return 32;

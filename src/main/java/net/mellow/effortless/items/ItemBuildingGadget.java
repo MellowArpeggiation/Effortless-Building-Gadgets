@@ -136,8 +136,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         BuildingMode mode = getMode(stack);
         if (mode.handler == null) return false;
 
-        mode.handler.clear(stack);
-        return false;
+        return mode.handler.clear(stack);
     }
 
     @Override

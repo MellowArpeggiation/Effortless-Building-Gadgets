@@ -59,9 +59,11 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
     }
 
     @Override
-    public void clear(ItemStack stack) {
+    public boolean clear(ItemStack stack) {
+        boolean didClear = stack.stackTagCompound.hasKey("pos0");
         stack.stackTagCompound.removeTag("pos0");
         stack.stackTagCompound.removeTag("pos1");
+        return didClear;
     }
 
     @Override

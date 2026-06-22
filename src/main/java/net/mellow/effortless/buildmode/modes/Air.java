@@ -58,8 +58,8 @@ public class Air extends BaseBuildMode {
     }
 
     @Override
-    public void clear(ItemStack stack) {
-        
+    public boolean clear(ItemStack stack) {
+        return false;
     }
 
     @Override
