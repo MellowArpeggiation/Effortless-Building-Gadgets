@@ -1,5 +1,8 @@
 package net.mellow.effortless.events;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.Event.Result;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -12,6 +15,7 @@ import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.buildmode.History;
 import net.mellow.effortless.compat.CompatBaublesExpanded;
 import net.mellow.effortless.items.ItemBuildingGadget;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -75,13 +79,13 @@ public class CommonEvents {
         }
 
         if (!event.world.isRemote) {
-            lastServerAction = event.action;
+            lastServerAction.put(event.entityPlayer, event.action);
         }
 
         CompatBaublesExpanded.syncBaubles(event.entityPlayer);
     }
 
-    private static Action lastServerAction;
+    private static Map<EntityPlayer, Action> lastServerAction = new HashMap<>();
 
     // This is kinda fucking horrendous, yes there is static mutable state involved
     // the above event can't see air clicks, ONLY items can see those
@@ -92,7 +96,7 @@ public class CommonEvents {
         if (event.player.worldObj.isRemote) return;
 
         if (event.phase == Phase.END) {
-            lastServerAction = null;
+            lastServerAction.remove(event.player);
             return;
         }
 
@@ -100,7 +104,7 @@ public class CommonEvents {
         if (event.player.swingProgressInt != -1) return;
 
         // Ignore any handled events
-        if (lastServerAction != null) return;
+        if (lastServerAction.get(event.player) != null) return;
 
         ItemStack gadget = CompatBaublesExpanded.getGadgetFromBaubles(event.player);
         if (gadget == null) return;
