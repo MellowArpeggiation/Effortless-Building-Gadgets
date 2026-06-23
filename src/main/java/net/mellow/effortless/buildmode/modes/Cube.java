@@ -6,6 +6,7 @@ import java.util.List;
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.blocks.Vec3;
+import net.mellow.effortless.blocks.BlockPos.Dimension;
 import net.mellow.effortless.buildmode.BuildModes;
 import net.mellow.effortless.buildmode.ThreeClicksBuildMode;
 import net.mellow.effortless.buildmode.VoxelRenderer;
@@ -58,18 +59,40 @@ public class Cube extends ThreeClicksBuildMode {
     }
 
     public static BlockPos findHeight(EntityPlayer player, BlockPos secondPos, boolean skipRaytrace) {
+        return findLength(player, secondPos, Dimension.Y, skipRaytrace);
+    }
+
+    public static BlockPos findLength(EntityPlayer player, BlockPos secondPos, Dimension dimension, boolean skipRaytrace) {
         Vec3 look = BuildModes.getPlayerLookVec(player);
         Vec3 start = BuildModes.getPlayerPos(player);
 
-        List<HeightCriteria> criteriaList = new ArrayList<>(3);
+        List<LengthCriteria> criteriaList = new ArrayList<>(3);
 
-        //X
-        Vec3 xBound = BuildModes.findXBound(secondPos.x, start, look);
-        criteriaList.add(new HeightCriteria(xBound, secondPos, start));
+        if (dimension == Dimension.X) {
+            //Y
+            Vec3 yBound = BuildModes.findXBound(secondPos.y, start, look);
+            criteriaList.add(new LengthCriteria(yBound, secondPos, start, Dimension.X));
 
-        //Z
-        Vec3 zBound = BuildModes.findZBound(secondPos.z, start, look);
-        criteriaList.add(new HeightCriteria(zBound, secondPos, start));
+            //Z
+            Vec3 zBound = BuildModes.findZBound(secondPos.z, start, look);
+            criteriaList.add(new LengthCriteria(zBound, secondPos, start, Dimension.X));
+        } else if (dimension == Dimension.Z) {
+            //X
+            Vec3 xBound = BuildModes.findXBound(secondPos.x, start, look);
+            criteriaList.add(new LengthCriteria(xBound, secondPos, start, Dimension.Z));
+
+            //Y
+            Vec3 yBound = BuildModes.findZBound(secondPos.y, start, look);
+            criteriaList.add(new LengthCriteria(yBound, secondPos, start, Dimension.Z));
+        } else {
+            //X
+            Vec3 xBound = BuildModes.findXBound(secondPos.x, start, look);
+            criteriaList.add(new LengthCriteria(xBound, secondPos, start, Dimension.Y));
+
+            //Z
+            Vec3 zBound = BuildModes.findZBound(secondPos.z, start, look);
+            criteriaList.add(new LengthCriteria(zBound, secondPos, start, Dimension.Y));
+        }
 
         //Remove invalid criteria
         // int reach = CapabilityHandler.getBuildModeReach(player);
@@ -80,13 +103,13 @@ public class Cube extends ThreeClicksBuildMode {
         if (criteriaList.isEmpty()) return null;
 
         //If only 1 is valid, choose that one
-        HeightCriteria selected = criteriaList.get(0);
+        LengthCriteria selected = criteriaList.get(0);
 
         //If multiple are valid, choose based on criteria
         if (criteriaList.size() > 1) {
             //Select the one that is closest (from wall position to its line counterpart)
             for (int i = 1; i < criteriaList.size(); i++) {
-                HeightCriteria criteria = criteriaList.get(i);
+                LengthCriteria criteria = criteriaList.get(i);
                 if (criteria.distToLineSq < 2.0 && selected.distToLineSq < 2.0) {
                     //Both very close to line, choose closest to player
                     if (criteria.distToPlayerSq < selected.distToPlayerSq)
@@ -174,23 +197,27 @@ public class Cube extends ThreeClicksBuildMode {
         Line.addZLineBlocks(list, z1, z2, x2, y2);
     }
 
-    static class HeightCriteria {
+    private static class LengthCriteria {
         Vec3 planeBound;
         Vec3 lineBound;
         double distToLineSq;
         double distToPlayerSq;
 
-        HeightCriteria(Vec3 planeBound, BlockPos secondPos, Vec3 start) {
+        public LengthCriteria(Vec3 planeBound, BlockPos secondPos, Vec3 start, Dimension dimension) {
             this.planeBound = planeBound;
-            this.lineBound = toLongestLine(this.planeBound, secondPos);
+            this.lineBound = toLongestLine(this.planeBound, secondPos, dimension);
             this.distToLineSq = this.lineBound.distanceToSqr(this.planeBound);
             this.distToPlayerSq = this.planeBound.distanceToSqr(start);
         }
 
-        //Make it from a plane into a line, on y axis only
-        private Vec3 toLongestLine(Vec3 boundVec, BlockPos secondPos) {
+        //Make it from a plane into a line, on selected axis only
+        private Vec3 toLongestLine(Vec3 boundVec, BlockPos secondPos, Dimension dimension) {
             BlockPos bound = BlockPos.containing(boundVec);
-            return new Vec3(secondPos.x, bound.y, secondPos.z);
+            switch (dimension) {
+                case X: return new Vec3(bound.x, secondPos.y, secondPos.z);
+                case Z: return new Vec3(secondPos.x, secondPos.y, bound.z);
+                default: return new Vec3(secondPos.x, bound.y, secondPos.z);
+            }
         }
 
         //check if its not behind the player and its not too close and not too far

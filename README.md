@@ -22,7 +22,7 @@ Place blocks in all sorts of different shapes, automatically replacing any soft 
     * Filled, Hollow, and Skeletonised options available
 * Diagonal Lines + Walls
 * Sloped Floors
-* Circles + Cylinders
+* Circles + Cylinders (vertical + horizontal)
 * Spheres
 
 You can also:
