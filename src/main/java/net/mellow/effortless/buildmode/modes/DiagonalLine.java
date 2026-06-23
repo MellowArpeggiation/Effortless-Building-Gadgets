@@ -6,45 +6,177 @@ import java.util.List;
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.blocks.Vec3;
-import net.mellow.effortless.buildmode.ThreeClicksBuildMode;
+import net.mellow.effortless.buildmode.BaseBuildMode;
+import net.mellow.effortless.buildmode.BuildModes;
 import net.mellow.effortless.buildmode.VoxelRenderer;
+import net.mellow.effortless.buildmode.ModeOptions.BuildingAction;
+import net.mellow.effortless.buildmode.ModeOptions.BuildingOption;
+import net.mellow.effortless.items.ItemBuildingGadget;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 
-public class DiagonalLine extends ThreeClicksBuildMode {
+public class DiagonalLine extends BaseBuildMode {
 
     @Override
-    public BlockPos addMid(ItemStack stack, World world, EntityPlayer player, BlockPos pos0) {
-        return Floor.findFloor(player, pos0, true);
+    public int add(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop) {
+        BuildingAction type = ItemBuildingGadget.getAction(stack, BuildingOption.LINE_DRAW);
+
+        if (type == BuildingAction.LINE_CONSTRUCT) return addConstruct(stack, selected, world, player, mop);
+        return addPointToPoint(stack, selected, world, player, mop);
+    }
+
+    private int addConstruct(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop) {
+        BlockPos pos0 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
+        BlockPos pos1 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos1"));
+
+        if (pos0 == null) {
+            pos0 = BlockPos.fromRaycastReplaceable(world, mop);
+            if (pos0 == null) return 0;
+
+            PlaceableStack place = PlaceableStack.getPlaceableStack(selected, world, player, pos0.x, pos0.y, pos0.z, mop.sideHit, new Vec3(mop.hitVec));
+
+            stack.stackTagCompound.setTag("pos0", pos0.save());
+            stack.stackTagCompound.setTag("place", place.save());
+        } else if (pos1 == null) {
+            pos1 = Floor.findFloor(player, pos0, true);
+            if (pos1 == null) return 0;
+
+            stack.stackTagCompound.setTag("pos1", pos1.save());
+        } else {
+            if (world.isRemote) {
+                clear(stack);
+                return 0;
+            }
+
+            PlaceableStack place = PlaceableStack.load(stack.stackTagCompound.getCompoundTag("place"));
+            if (place == null) {
+                clear(stack);
+                return 0;
+            }
+
+            BlockPos pos2 = Cube.findHeight(player, pos1, true);
+            if (pos2 == null) return 0;
+
+            int built = build(world, player, place, getDiagonalLineBlocks(pos0, pos2, 10), false);
+
+            if (built <= 0) return 0;
+
+            clear(stack);
+            
+            return built;
+        }
+
+        return 0;
+    }
+
+    private int addPointToPoint(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop) {
+        BlockPos pos0 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
+
+        if (pos0 == null) {
+            pos0 = BlockPos.fromRaycastReplaceable(world, mop);
+            if (pos0 == null) return 0;
+
+            PlaceableStack place = PlaceableStack.getPlaceableStack(selected, world, player, pos0.x, pos0.y, pos0.z, mop.sideHit, new Vec3(mop.hitVec));
+
+            stack.stackTagCompound.setTag("pos0", pos0.save());
+            stack.stackTagCompound.setTag("place", place.save());
+        } else {
+            if (world.isRemote) {
+                clear(stack);
+                return 0;
+            }
+
+            PlaceableStack place = PlaceableStack.load(stack.stackTagCompound.getCompoundTag("place"));
+            if (place == null) {
+                clear(stack);
+                return 0;
+            }
+
+            BlockPos pos2 = BlockPos.fromRaycastReplaceable(world, mop);
+            if (pos2 == null) return 0;
+
+            int built = build(world, player, place, getDiagonalLineBlocks(pos0, pos2, 10), false);
+
+            if (built <= 0) return 0;
+
+            clear(stack);
+            
+            return built;
+        }
+
+        return 0;
     }
 
     @Override
-    public int add(ItemStack stack, PlaceableStack selected, World world, EntityPlayer player, BlockPos pos0, BlockPos pos1) {
-        BlockPos pos2 = Cube.findHeight(player, pos1, true);
-        if (pos2 == null) return 0;
-
-        return build(world, player, selected, getDiagonalLineBlocks(pos0, pos2, 10), false);
+    public boolean clear(ItemStack stack) {
+        boolean didClear = stack.stackTagCompound.hasKey("pos0");
+        stack.stackTagCompound.removeTag("pos0");
+        stack.stackTagCompound.removeTag("pos1");
+        return didClear;
     }
 
     @Override
-    public void render(ItemStack stack, World world, EntityPlayer player, BlockPos pos0, float partialTicks) {
-        BlockPos pos1 = Floor.findFloor(player, pos0, true);
-        if (pos1 == null) return;
-
-        VoxelRenderer.renderBlocks(getDiagonalLineBlocks(pos0, pos1, 10), player, partialTicks);
-
-        updateHighlight(pos0, pos1);
+    public boolean isPlacing(ItemStack stack) {
+        return stack.stackTagCompound.hasKey("pos0");
     }
 
     @Override
-    public void render(ItemStack stack, World world, EntityPlayer player, BlockPos pos0, BlockPos pos1, float partialTicks) {
-        BlockPos pos2 = Cube.findHeight(player, pos1, true);
-        if (pos2 == null) return;
+    public void render(ItemStack stack, World world, EntityPlayer player, float partialTicks) {
+        BuildingAction type = ItemBuildingGadget.getAction(stack, BuildingOption.LINE_DRAW);
 
-        VoxelRenderer.renderBlocks(getDiagonalLineBlocks(pos0, pos2, 10), player, partialTicks);
+        if (type == BuildingAction.LINE_CONSTRUCT) {
+            renderConstruct(stack, world, player, partialTicks);
+        } else {
+            renderPointToPoint(stack, world, player, partialTicks);
+        }
+    }
 
-        updateHighlight(pos0, pos2);
+    public void renderConstruct(ItemStack stack, World world, EntityPlayer player, float partialTicks) {
+        BlockPos pos0 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
+        BlockPos pos1 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos1"));
+
+        if (pos0 == null) {
+            MovingObjectPosition mop = BuildModes.getMop(player, reach(stack));
+            if (mop == null) return;
+
+            Minecraft.getMinecraft().renderGlobal.drawSelectionBox(player, mop, 0, partialTicks);
+        } else if (pos1 == null) {
+            pos1 = Floor.findFloor(player, pos0, true);
+            if (pos1 == null) return;
+
+            VoxelRenderer.renderBlocks(getDiagonalLineBlocks(pos0, pos1, 10), player, partialTicks);
+
+            updateHighlight(pos0, pos1);
+        } else {
+            BlockPos pos2 = Cube.findHeight(player, pos1, true);
+            if (pos2 == null) return;
+
+            VoxelRenderer.renderBlocks(getDiagonalLineBlocks(pos0, pos2, 10), player, partialTicks);
+
+            updateHighlight(pos0, pos2);
+        }
+    }
+
+    public void renderPointToPoint(ItemStack stack, World world, EntityPlayer player, float partialTicks) {
+        BlockPos pos0 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
+
+        if (pos0 == null) {
+            MovingObjectPosition mop = BuildModes.getMop(player, reach(stack));
+            if (mop == null) return;
+
+            Minecraft.getMinecraft().renderGlobal.drawSelectionBox(player, mop, 0, partialTicks);
+        } else {
+            MovingObjectPosition mop = BuildModes.getMop(player, reach(stack));
+            BlockPos pos1 = BlockPos.fromRaycastReplaceable(world, mop);
+            if (pos1 == null) return;
+
+            VoxelRenderer.renderBlocks(getDiagonalLineBlocks(pos0, pos1, 10), player, partialTicks);
+
+            updateHighlight(pos0, pos1);
+        }
     }
 
     //Add diagonal line from first to second

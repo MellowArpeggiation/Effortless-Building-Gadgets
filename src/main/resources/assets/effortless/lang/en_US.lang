@@ -11,6 +11,8 @@ buildingaction.circle_start_corner.name=Corner
 buildingaction.circle_start_center.name=Center
 buildingaction.circle_vertical.name=Vertical
 buildingaction.circle_horizontal.name=Horizontal
+buildingaction.line_construct.name=Construct
+buildingaction.line_point_to_point.name=Point to Point
 
 buildingmode.none.name=Disabled
 buildingmode.none.desc=Disables gadget placing

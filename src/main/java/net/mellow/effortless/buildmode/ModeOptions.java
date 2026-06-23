@@ -15,7 +15,7 @@ public class ModeOptions {
         WALL(new Wall(), 48, 16, 0x0080ff, BuildingOption.FILL), // walls
         FLOOR(new Floor(), 64, 16, 0x0080ff, BuildingOption.FILL), // floors
         CUBE(new Cube(), 80, 16, 0x0080ff, BuildingOption.CUBE_FILL), // miney crafta
-        DIAGONAL_LINE(new DiagonalLine(), 96, 16, 0x8f47de), // okay I think you get it now
+        DIAGONAL_LINE(new DiagonalLine(), 96, 16, 0x8f47de, BuildingOption.LINE_DRAW), // okay I think you get it now
         DIAGONAL_WALL(new DiagonalWall(), 112, 16, 0x8f47de, BuildingOption.FILL),
         SLOPE_FLOOR(new SlopeFloor(), 128, 16, 0x8f47de, BuildingOption.RAISED_EDGE),
         CIRCLE(new Circle(), 144, 16, 0x4ac24d, BuildingOption.CIRCLE_START, BuildingOption.FILL, BuildingOption.CIRCLE_TILT),
@@ -77,7 +77,10 @@ public class ModeOptions {
         CIRCLE_START_CENTER(160, 32),
 
         CIRCLE_VERTICAL(144, 16),
-        CIRCLE_HORIZONTAL(144, 0);
+        CIRCLE_HORIZONTAL(144, 0),
+
+        LINE_CONSTRUCT(160, 0),
+        LINE_POINT_TO_POINT(176, 0);
 
         public final int iconX;
         public final int iconY;
@@ -110,7 +113,9 @@ public class ModeOptions {
         RAISED_EDGE(BuildingAction.SHORT_EDGE, BuildingAction.LONG_EDGE),
 
         CIRCLE_START(BuildingAction.CIRCLE_START_CORNER, BuildingAction.CIRCLE_START_CENTER),
-        CIRCLE_TILT(BuildingAction.CIRCLE_VERTICAL, BuildingAction.CIRCLE_HORIZONTAL);
+        CIRCLE_TILT(BuildingAction.CIRCLE_VERTICAL, BuildingAction.CIRCLE_HORIZONTAL),
+
+        LINE_DRAW(BuildingAction.LINE_CONSTRUCT, BuildingAction.LINE_POINT_TO_POINT);
 
         public final BuildingAction[] actions;
 
