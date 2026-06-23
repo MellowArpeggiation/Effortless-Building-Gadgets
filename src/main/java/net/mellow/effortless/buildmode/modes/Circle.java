@@ -5,6 +5,7 @@ import java.util.List;
 
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.blocks.PlaceableStack;
+import net.mellow.effortless.blocks.BlockPos.Dimension;
 import net.mellow.effortless.buildmode.ModeOptions.BuildingAction;
 import net.mellow.effortless.buildmode.ModeOptions.BuildingOption;
 import net.mellow.effortless.buildmode.TwoClicksBuildMode;
@@ -19,7 +20,11 @@ public class Circle extends TwoClicksBuildMode {
 
     @Override
     public int add(ItemStack stack, PlaceableStack selected, World world, EntityPlayer player, BlockPos from) {
-        BlockPos to = Floor.findFloor(player, from, true);
+        BuildingAction tilt = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_TILT);
+
+        BlockPos to = tilt == BuildingAction.CIRCLE_VERTICAL
+            ? Floor.findFloor(player, from, true)
+            : Wall.findWall(player, from, true);
         if (to == null) return 0;
 
         BuildingAction start = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_START);
@@ -30,7 +35,11 @@ public class Circle extends TwoClicksBuildMode {
 
     @Override
     public void render(ItemStack stack, World world, EntityPlayer player, BlockPos from, float partialTicks) {
-        BlockPos to = Floor.findFloor(player, from, true);
+        BuildingAction tilt = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_TILT);
+
+        BlockPos to = tilt == BuildingAction.CIRCLE_VERTICAL
+            ? Floor.findFloor(player, from, true)
+            : Wall.findWall(player, from, true);
         if (to == null) return;
 
         BuildingAction start = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_START);
@@ -47,6 +56,28 @@ public class Circle extends TwoClicksBuildMode {
     }
 
     public static List<BlockPos> getCircleBlocks(BlockPos from, BlockPos to, boolean fromCorner, boolean fill) {
+        // swizzle inputs based on circle dimensions
+        if (from.y == to.y) return getCircleSwizzled(from, to, fromCorner, fill, Dimension.Y);
+
+        if (from.x == to.x) {
+            BlockPos swizzleFrom = new BlockPos(from.y, from.x, from.z);
+            BlockPos swizzleTo = new BlockPos(to.y, to.x, to.z);
+
+            return getCircleSwizzled(swizzleFrom, swizzleTo, fromCorner, fill, Dimension.X);
+        }
+
+        if (from.z == to.z) {
+            BlockPos swizzleFrom = new BlockPos(from.x, from.z, from.y);
+            BlockPos swizzleTo = new BlockPos(to.x, to.z, to.y);
+
+            return getCircleSwizzled(swizzleFrom, swizzleTo, fromCorner, fill, Dimension.Z);
+        }
+
+        // Invalid circle, just do Y
+        return getCircleSwizzled(from, to, fromCorner, fill, Dimension.Y);
+    }
+
+    public static List<BlockPos> getCircleSwizzled(BlockPos from, BlockPos to, boolean fromCorner, boolean fill, Dimension swizzle) {
         List<BlockPos> list = new ArrayList<>();
 
         double centerX = from.x;
@@ -63,33 +94,44 @@ public class Circle extends TwoClicksBuildMode {
         double radiusX = Math.abs(to.x - centerX);
         double radiusZ = Math.abs(to.z - centerZ);
 
+        BlockPos min = BlockPos.min(from, to);
+        BlockPos max = BlockPos.max(from, to);
+
         if (fill)
-            addCircleBlocks(list, from.x, from.y, from.z, to.x, to.y, to.z, centerX, centerZ, radiusX, radiusZ);
+            addCircleBlocks(list, min, max, centerX, centerZ, radiusX, radiusZ, swizzle);
         else
-            addHollowCircleBlocks(list, from.x, from.y, from.z, to.x, to.y, to.z, centerX, centerZ, radiusX, radiusZ);
+            addHollowCircleBlocks(list, min, max, centerX, centerZ, radiusX, radiusZ, swizzle);
 
         return list;
     }
 
-    public static void addCircleBlocks(List<BlockPos> list, int x1, int y1, int z1, int x2, int y2, int z2, double centerX, double centerZ, double radiusX, double radiusZ) {
-        for (int l = x1; x1 < x2 ? l <= x2 : l >= x2; l += x1 < x2 ? 1 : -1) {
-            for (int n = z1; z1 < z2 ? n <= z2 : n >= z2; n += z1 < z2 ? 1 : -1) {
-                double distance = distance(l, n, centerX, centerZ);
-                double radius = calculateEllipseRadius(centerX, centerZ, radiusX, radiusZ, l, n);
+    public static void addCircleBlocks(List<BlockPos> list, BlockPos min, BlockPos max, double centerX, double centerZ, double radiusX, double radiusZ, Dimension swizzle) {
+        for (int x = min.x; x <= max.x; x++) {
+            for (int z = min.z; z <= max.z; z++) {
+                double distance = distance(x, z, centerX, centerZ);
+                double radius = calculateEllipseRadius(centerX, centerZ, radiusX, radiusZ, x, z);
                 if (distance < radius + 0.4f)
-                    list.add(new BlockPos(l, y1, n));
+                    addToListSwizzled(list, x, min.y, z, swizzle);
             }
         }
     }
 
-    public static void addHollowCircleBlocks(List<BlockPos> list, int x1, int y1, int z1, int x2, int y2, int z2, double centerX, double centerZ, double radiusX, double radiusZ) {
-        for (int l = x1; x1 < x2 ? l <= x2 : l >= x2; l += x1 < x2 ? 1 : -1) {
-            for (int n = z1; z1 < z2 ? n <= z2 : n >= z2; n += z1 < z2 ? 1 : -1) {
-                double distance = distance(l, n, centerX, centerZ);
-                double radius = calculateEllipseRadius(centerX, centerZ, radiusX, radiusZ, l, n);
+    public static void addHollowCircleBlocks(List<BlockPos> list, BlockPos min, BlockPos max, double centerX, double centerZ, double radiusX, double radiusZ, Dimension swizzle) {
+        for (int x = min.x; x <= max.x; x++) {
+            for (int z = min.z; z <= max.z; z++) {
+                double distance = distance(x, z, centerX, centerZ);
+                double radius = calculateEllipseRadius(centerX, centerZ, radiusX, radiusZ, x, z);
                 if (distance < radius + 0.4f && distance > radius - 0.6f)
-                    list.add(new BlockPos(l, y1, n));
+                    addToListSwizzled(list, x, min.y, z, swizzle);
             }
+        }
+    }
+
+    private static void addToListSwizzled(List<BlockPos> list, int x, int y, int z, Dimension swizzle) {
+        switch (swizzle) {
+            case Y: list.add(new BlockPos(x, y, z)); break;
+            case X: list.add(new BlockPos(y, x, z)); break;
+            case Z: list.add(new BlockPos(x, z, y)); break;
         }
     }
 

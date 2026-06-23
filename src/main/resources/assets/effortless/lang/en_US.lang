@@ -9,6 +9,8 @@ buildingaction.short_edge.name=Short Edge
 buildingaction.long_edge.name=Long Edge
 buildingaction.circle_start_corner.name=Corner
 buildingaction.circle_start_center.name=Center
+buildingaction.circle_vertical.name=Vertical
+buildingaction.circle_horizontal.name=Horizontal
 
 buildingmode.none.name=Disabled
 buildingmode.none.desc=Disables gadget placing

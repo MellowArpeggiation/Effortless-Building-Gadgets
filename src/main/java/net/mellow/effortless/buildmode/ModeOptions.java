@@ -18,7 +18,7 @@ public class ModeOptions {
         DIAGONAL_LINE(new DiagonalLine(), 96, 16, 0x8f47de), // okay I think you get it now
         DIAGONAL_WALL(new DiagonalWall(), 112, 16, 0x8f47de, BuildingOption.FILL),
         SLOPE_FLOOR(new SlopeFloor(), 128, 16, 0x8f47de, BuildingOption.RAISED_EDGE),
-        CIRCLE(new Circle(), 144, 16, 0x4ac24d, BuildingOption.CIRCLE_START, BuildingOption.FILL),
+        CIRCLE(new Circle(), 144, 16, 0x4ac24d, BuildingOption.CIRCLE_START, BuildingOption.FILL, BuildingOption.CIRCLE_TILT),
         CYLINDER(new Cylinder(), 160, 16, 0x4ac24d, BuildingOption.CIRCLE_START, BuildingOption.FILL),
         SPHERE(new Sphere(), 176, 16, 0x4ac24d, BuildingOption.CIRCLE_START, BuildingOption.FILL);
 
@@ -74,7 +74,10 @@ public class ModeOptions {
         LONG_EDGE(128, 32),
 
         CIRCLE_START_CORNER(144, 32),
-        CIRCLE_START_CENTER(160, 32);
+        CIRCLE_START_CENTER(160, 32),
+
+        CIRCLE_VERTICAL(144, 16),
+        CIRCLE_HORIZONTAL(144, 0);
 
         public final int iconX;
         public final int iconY;
@@ -103,8 +106,11 @@ public class ModeOptions {
     public static enum BuildingOption {
         FILL(BuildingAction.FULL, BuildingAction.HOLLOW),
         CUBE_FILL(BuildingAction.CUBE_FULL, BuildingAction.CUBE_HOLLOW, BuildingAction.CUBE_SKELETON),
+
         RAISED_EDGE(BuildingAction.SHORT_EDGE, BuildingAction.LONG_EDGE),
-        CIRCLE_START(BuildingAction.CIRCLE_START_CORNER, BuildingAction.CIRCLE_START_CENTER);
+
+        CIRCLE_START(BuildingAction.CIRCLE_START_CORNER, BuildingAction.CIRCLE_START_CENTER),
+        CIRCLE_TILT(BuildingAction.CIRCLE_VERTICAL, BuildingAction.CIRCLE_HORIZONTAL);
 
         public final BuildingAction[] actions;
 

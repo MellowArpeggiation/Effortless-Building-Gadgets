@@ -268,7 +268,7 @@ public class GuiBuildingGadget extends GuiScreen {
 
         // Draw action buttons
         double actionXOffset = -100 - (actions.length * btnWidth + (actions.length - 1) * padding); // right aligned
-        double actionYOffset = -20;
+        double actionYOffset = -(btnWidth / 2);
 
         for (int i = 0; i < actions.length; i++) {
             BuildingAction action = actions[i];
@@ -296,7 +296,7 @@ public class GuiBuildingGadget extends GuiScreen {
 
         // Draw build mode options
         double optionXOffset = 100; // left aligned
-        double optionYOffset = -20; 
+        double optionYOffset = -(btnWidth / 2) - (options.length > 2 ? btnWidth + padding : 0); 
         for (int i = 0; i < options.length; i++) {
             BuildingOption option = options[i];
 

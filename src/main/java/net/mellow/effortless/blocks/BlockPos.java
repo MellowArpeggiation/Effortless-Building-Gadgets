@@ -19,6 +19,12 @@ public class BlockPos implements Comparable<BlockPos> {
         this.z = z;
     }
 
+    public static enum Dimension {
+        X,
+        Y,
+        Z,
+    }
+
     public static BlockPos load(NBTTagCompound tag) {
         if (tag == null || !tag.hasKey("x") || !tag.hasKey("y") || !tag.hasKey("z")) return null;
         int x = tag.getInteger("x");
