@@ -56,6 +56,11 @@ public class Circle extends TwoClicksBuildMode {
     }
 
     public static List<BlockPos> getCircleBlocks(BlockPos from, BlockPos to, boolean fromCorner, boolean fill) {
+        // if line, just do line
+        if (from.x == to.x && from.y == to.y) return Line.getLineBlocks(from, to);
+        if (from.x == to.x && from.z == to.z) return Line.getLineBlocks(from, to);
+        if (from.y == to.y && from.z == to.z) return Line.getLineBlocks(from, to);
+
         // swizzle inputs based on circle dimensions
         if (from.y == to.y) return getCircleSwizzled(from, to, fromCorner, fill, Dimension.Y);
 
@@ -117,6 +122,11 @@ public class Circle extends TwoClicksBuildMode {
     }
 
     public static void addHollowCircleBlocks(List<BlockPos> list, BlockPos min, BlockPos max, double centerX, double centerZ, double radiusX, double radiusZ, Dimension swizzle) {
+        if (radiusX < 1.25 || radiusZ < 1.25) {
+            addCircleBlocks(list, min, max, centerX, centerZ, radiusX, radiusZ, swizzle);
+            return;
+        }
+
         for (int x = min.x; x <= max.x; x++) {
             for (int z = min.z; z <= max.z; z++) {
                 double distance = distance(x, z, centerX, centerZ);
