@@ -37,9 +37,10 @@ public class DiagonalWall extends ThreeClicksBuildMode {
         BlockPos pos1 = Floor.findFloor(player, pos0, true);
         if (pos1 == null) return;
 
-        VoxelRenderer.renderBlocks(DiagonalLine.getDiagonalLineBlocks(pos0, pos1, 1), player, partialTicks);
+        List<BlockPos> blocks = DiagonalLine.getDiagonalLineBlocks(pos0, pos1, 1);
+        VoxelRenderer.renderBlocks(blocks, player, partialTicks);
 
-        updateHighlight(pos0, pos1);
+        updateHighlight(pos0, pos1, blocks.size());
     }
 
     @Override
@@ -51,7 +52,7 @@ public class DiagonalWall extends ThreeClicksBuildMode {
         List<BlockPos> blocks = getDiagonalWallBlocks(pos0, pos1, pos2, fillMode == BuildingAction.FULL);
         VoxelRenderer.renderBlocks(blocks, player, partialTicks);
 
-        updateHighlight(pos0, pos2);
+        updateHighlight(pos0, pos2, blocks.size());
     }
 
     //Add diagonal wall from first to second

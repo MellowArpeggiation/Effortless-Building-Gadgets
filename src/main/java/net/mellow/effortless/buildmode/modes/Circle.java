@@ -49,9 +49,9 @@ public class Circle extends TwoClicksBuildMode {
         VoxelRenderer.renderBlocks(blocks, player, partialTicks);
         
         if (start == BuildingAction.CIRCLE_START_CORNER) {
-            updateHighlight(BlockPos.min(from, to), BlockPos.max(from, to));
+            updateHighlight(BlockPos.min(from, to), BlockPos.max(from, to), blocks.size());
         } else {
-            updateHighlightCentered(BlockPos.min(from, to), BlockPos.max(from, to));
+            updateHighlightCentered(BlockPos.min(from, to), BlockPos.max(from, to), blocks.size());
         }
     }
 
@@ -163,7 +163,7 @@ public class Circle extends TwoClicksBuildMode {
         return radiusX * radiusZ / Math.sqrt(part1 + part2);
     }
 
-    public static void updateHighlightCentered(BlockPos from, BlockPos to) {
+    public static void updateHighlightCentered(BlockPos from, BlockPos to, int count) {
         BlockPos min = BlockPos.min(from, to);
         BlockPos max = BlockPos.max(from, to);
 
@@ -172,7 +172,7 @@ public class Circle extends TwoClicksBuildMode {
         if (min.y != max.y) values.add("" + (max.y - min.y + 1));
         if (min.z != max.z) values.add("" + ((max.z - min.z + 1) * 2 - 1));
 
-        highlightTitle = !values.isEmpty() ? String.join("x", values) : "1";
+        highlightTitle = count + " (" + (!values.isEmpty() ? String.join("x", values) : "1") + ")";
         Minecraft.getMinecraft().ingameGUI.remainingHighlightTicks = 40;
     }
     

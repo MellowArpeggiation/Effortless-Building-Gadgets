@@ -56,9 +56,9 @@ public class Cylinder extends ThreeClicksBuildMode {
         VoxelRenderer.renderBlocks(blocks, player, partialTicks);
         
         if (start == BuildingAction.CIRCLE_START_CORNER) {
-            updateHighlight(pos0, pos1);
+            updateHighlight(pos0, pos1, blocks.size());
         } else {
-            Circle.updateHighlightCentered(pos0, pos1);
+            Circle.updateHighlightCentered(pos0, pos1, blocks.size());
         }
     }
 
@@ -77,9 +77,9 @@ public class Cylinder extends ThreeClicksBuildMode {
         VoxelRenderer.renderBlocks(blocks, player, partialTicks);
         
         if (start == BuildingAction.CIRCLE_START_CORNER) {
-            updateHighlight(BlockPos.min(pos0, pos2), BlockPos.max(pos0, pos2));
+            updateHighlight(BlockPos.min(pos0, pos2), BlockPos.max(pos0, pos2), blocks.size());
         } else {
-            Circle.updateHighlightCentered(BlockPos.min(pos0, pos2), BlockPos.max(pos0, pos2));
+            Circle.updateHighlightCentered(BlockPos.min(pos0, pos2), BlockPos.max(pos0, pos2), blocks.size());
         }
     }
 

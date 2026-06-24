@@ -138,7 +138,7 @@ public abstract class BaseBuildMode {
 
     public abstract void render(ItemStack stack, World world, EntityPlayer player, float partialTicks);
 
-    public static void updateHighlight(BlockPos from, BlockPos to) {
+    public static void updateHighlight(BlockPos from, BlockPos to, int count) {
         BlockPos min = BlockPos.min(from, to);
         BlockPos max = BlockPos.max(from, to);
 
@@ -147,7 +147,7 @@ public abstract class BaseBuildMode {
         if (min.y != max.y) values.add("" + (max.y - min.y + 1));
         if (min.z != max.z) values.add("" + (max.z - min.z + 1));
 
-        highlightTitle = !values.isEmpty() ? String.join("x", values) : "1";
+        highlightTitle = count + " (" + (!values.isEmpty() ? String.join("x", values) : "1") + ")";
         Minecraft.getMinecraft().ingameGUI.remainingHighlightTicks = 40;
     }
 

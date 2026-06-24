@@ -32,7 +32,7 @@ public class Line extends TwoClicksBuildMode {
         List<BlockPos> blocks = getLineBlocks(from, to);
         VoxelRenderer.renderBlocks(blocks, player, partialTicks);
 
-        updateHighlight(from, to);
+        updateHighlight(from, to, blocks.size());
     }
 
 

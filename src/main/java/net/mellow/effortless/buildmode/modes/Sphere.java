@@ -10,7 +10,6 @@ import net.mellow.effortless.buildmode.ModeOptions.BuildingOption;
 import net.mellow.effortless.buildmode.ThreeClicksBuildMode;
 import net.mellow.effortless.buildmode.VoxelRenderer;
 import net.mellow.effortless.items.ItemBuildingGadget;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
@@ -44,9 +43,9 @@ public class Sphere extends ThreeClicksBuildMode {
         VoxelRenderer.renderBlocks(blocks, player, partialTicks);
         
         if (start == BuildingAction.CIRCLE_START_CORNER) {
-            updateHighlight(pos0, pos1);
+            updateHighlight(pos0, pos1, blocks.size());
         } else {
-            Circle.updateHighlightCentered(pos0, pos1);
+            Circle.updateHighlightCentered(pos0, pos1, blocks.size());
         }
     }
 
@@ -60,11 +59,7 @@ public class Sphere extends ThreeClicksBuildMode {
         List<BlockPos> blocks = getSphereBlocks(pos0, pos1, pos2, start == BuildingAction.CIRCLE_START_CORNER, fill == BuildingAction.FULL);
         VoxelRenderer.renderBlocks(blocks, player, partialTicks);
         
-        // if (start == BuildingAction.CIRCLE_START_CORNER) {
-            updateHighlight(pos0, pos2);
-        // } else {
-        //     updateHighlightSphereCentered(pos0, pos2);
-        // }
+        updateHighlight(pos0, pos2, blocks.size());
     }
 
     public static List<BlockPos> getSphereBlocks(BlockPos from, BlockPos mid, BlockPos to, boolean fromCorner, boolean fill) {
@@ -136,19 +131,6 @@ public class Sphere extends ThreeClicksBuildMode {
 
         //TODO project x to plane
         return Circle.calculateEllipseRadius(centerX, centerY, radiusXZ, radiusY, x, y);
-    }
-
-    public static void updateHighlightSphereCentered(BlockPos from, BlockPos to) {
-        BlockPos min = BlockPos.min(from, to);
-        BlockPos max = BlockPos.max(from, to);
-
-        List<String> values = new ArrayList<>();
-        if (min.x != max.x) values.add("" + (max.x - min.x + 1));
-        if (min.y != max.y) values.add("" + ((max.y - min.y + 1) * 2 - 1));
-        if (min.z != max.z) values.add("" + (max.z - min.z + 1));
-
-        highlightTitle = !values.isEmpty() ? String.join("x", values) : "1";
-        Minecraft.getMinecraft().ingameGUI.remainingHighlightTicks = 40;
     }
     
 }

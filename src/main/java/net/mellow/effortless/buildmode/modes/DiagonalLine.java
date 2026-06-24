@@ -147,16 +147,18 @@ public class DiagonalLine extends BaseBuildMode {
             pos1 = Floor.findFloor(player, pos0, true);
             if (pos1 == null) return;
 
-            VoxelRenderer.renderBlocks(getDiagonalLineBlocks(pos0, pos1, 10), player, partialTicks);
+            List<BlockPos> blocks = getDiagonalLineBlocks(pos0, pos1, 10);
+            VoxelRenderer.renderBlocks(blocks, player, partialTicks);
 
-            updateHighlight(pos0, pos1);
+            updateHighlight(pos0, pos1, blocks.size());
         } else {
             BlockPos pos2 = Cube.findHeight(player, pos0, pos1, true);
             if (pos2 == null) return;
 
-            VoxelRenderer.renderBlocks(getDiagonalLineBlocks(pos0, pos2, 10), player, partialTicks);
+            List<BlockPos> blocks = getDiagonalLineBlocks(pos0, pos2, 10);
+            VoxelRenderer.renderBlocks(blocks, player, partialTicks);
 
-            updateHighlight(pos0, pos2);
+            updateHighlight(pos0, pos2, blocks.size());
         }
     }
 
@@ -173,9 +175,10 @@ public class DiagonalLine extends BaseBuildMode {
             BlockPos pos1 = BlockPos.fromRaycastReplaceable(world, mop);
             if (pos1 == null) return;
 
-            VoxelRenderer.renderBlocks(getDiagonalLineBlocks(pos0, pos1, 10), player, partialTicks);
+            List<BlockPos> blocks = getDiagonalLineBlocks(pos0, pos1, 10);
+            VoxelRenderer.renderBlocks(blocks, player, partialTicks);
 
-            updateHighlight(pos0, pos1);
+            updateHighlight(pos0, pos1, blocks.size());
         }
     }
 

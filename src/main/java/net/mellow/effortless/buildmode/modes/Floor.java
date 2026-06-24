@@ -38,7 +38,7 @@ public class Floor extends TwoClicksBuildMode {
         List<BlockPos> blocks = getFloorBlocks(from, to, fillMode == BuildingAction.FULL);
         VoxelRenderer.renderBlocks(blocks, player, partialTicks);
 
-        updateHighlight(from, to);
+        updateHighlight(from, to, blocks.size());
     }
 
     public static BlockPos findFloor(EntityPlayer player, BlockPos firstPos, boolean skipRaytrace) {

@@ -37,9 +37,10 @@ public class SlopeFloor extends ThreeClicksBuildMode {
         BlockPos pos1 = Floor.findFloor(player, pos0, true);
         if (pos1 == null) return;
 
-        VoxelRenderer.renderBlocks(Floor.getFloorBlocks(pos0, pos1, true), player, partialTicks);
+        List<BlockPos> blocks = Floor.getFloorBlocks(pos0, pos1, true);
+        VoxelRenderer.renderBlocks(blocks, player, partialTicks);
 
-        updateHighlight(pos0, pos1);
+        updateHighlight(pos0, pos1, blocks.size());
     }
 
     @Override
@@ -51,7 +52,7 @@ public class SlopeFloor extends ThreeClicksBuildMode {
         List<BlockPos> blocks = getSlopeFloorBlocks(pos0, pos1, pos2, edge == BuildingAction.SHORT_EDGE);
         VoxelRenderer.renderBlocks(blocks, player, partialTicks);
 
-        updateHighlight(pos0, pos2);
+        updateHighlight(pos0, pos2, blocks.size());
     }
 
     //Add slope floor from first to second

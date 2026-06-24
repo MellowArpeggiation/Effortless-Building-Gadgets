@@ -38,7 +38,7 @@ public class Wall extends TwoClicksBuildMode {
         List<BlockPos> blocks = getWallBlocks(from, to, fillMode == BuildingAction.FULL);
         VoxelRenderer.renderBlocks(blocks, player, partialTicks);
 
-        updateHighlight(from, to);
+        updateHighlight(from, to, blocks.size());
     }
 
     public static BlockPos findWall(EntityPlayer player, BlockPos firstPos, boolean skipRaytrace) {

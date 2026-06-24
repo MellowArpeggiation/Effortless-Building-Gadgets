@@ -43,7 +43,7 @@ public class Cube extends ThreeClicksBuildMode {
         List<BlockPos> blocks = getFloorBlocksUsingCubeFill(pos0, pos1, fillMode);
         VoxelRenderer.renderBlocks(blocks, player, partialTicks);
 
-        updateHighlight(pos0, pos1);
+        updateHighlight(pos0, pos1, blocks.size());
     }
 
     @Override
@@ -55,7 +55,7 @@ public class Cube extends ThreeClicksBuildMode {
         List<BlockPos> blocks = getCubeBlocks(pos0, pos2, fillMode);
         VoxelRenderer.renderBlocks(blocks, player, partialTicks);
 
-        updateHighlight(pos0, pos2);
+        updateHighlight(pos0, pos2, blocks.size());
     }
 
     public static BlockPos findHeight(EntityPlayer player, BlockPos firstPos, BlockPos secondPos, boolean skipRaytrace) {
