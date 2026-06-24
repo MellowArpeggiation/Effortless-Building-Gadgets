@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.mellow.effortless.blocks.BlockPos;
-import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.blocks.BlockPos.Dimension;
+import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.buildmode.ModeOptions.BuildingAction;
 import net.mellow.effortless.buildmode.ModeOptions.BuildingOption;
 import net.mellow.effortless.buildmode.TwoClicksBuildMode;
@@ -120,8 +120,10 @@ public class Circle extends TwoClicksBuildMode {
         for (int x = min.x; x <= max.x; x++) {
             for (int z = min.z; z <= max.z; z++) {
                 double distance = distance(x, z, centerX, centerZ);
-                double radius = calculateEllipseRadius(centerX, centerZ, radiusX, radiusZ, x, z);
-                if (distance < radius + 0.4f && distance > radius - 0.6f)
+                double radiusOuter = calculateEllipseRadius(centerX, centerZ, radiusX, radiusZ, x, z);
+                double radiusInner = calculateEllipseRadius(centerX, centerZ, radiusX - 1, radiusZ - 1, x, z);
+                radiusInner = Math.min(radiusInner, radiusOuter - 1);
+                if (distance < radiusOuter + 0.4f && distance > radiusInner + 0.4f)
                     addToListSwizzled(list, x, min.y, z, swizzle);
             }
         }
@@ -140,8 +142,12 @@ public class Circle extends TwoClicksBuildMode {
     }
 
     public static double calculateEllipseRadius(double centerX, double centerZ, double radiusX, double radiusZ, int x, int z) {
-        //https://math.stackexchange.com/questions/432902/how-to-get-the-radius-of-an-ellipse-at-a-specific-angle-by-knowing-its-semi-majo
         double theta = Math.atan2(z - centerZ, x - centerX);
+        return calculateEllipseRadius(centerX, centerZ, radiusX, radiusZ, theta);
+    }
+
+    public static double calculateEllipseRadius(double centerX, double centerZ, double radiusX, double radiusZ, double theta) {
+        //https://math.stackexchange.com/questions/432902/how-to-get-the-radius-of-an-ellipse-at-a-specific-angle-by-knowing-its-semi-majo
         double part1 = radiusX * radiusX * Math.sin(theta) * Math.sin(theta);
         double part2 = radiusZ * radiusZ * Math.cos(theta) * Math.cos(theta);
         return radiusX * radiusZ / Math.sqrt(part1 + part2);

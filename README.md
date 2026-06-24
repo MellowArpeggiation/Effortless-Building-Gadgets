@@ -37,6 +37,7 @@ Requires power from:
 
 ## Tips
 * Hold crouch to lock dimensions, helpful for making perfect circles quickly!
+* When working with blocks that orient based on positioning when placed (stairs, ArchitectureCraft blocks, etc), your *first* click determines what the final block will look like!
 
 ## Planned features
 * Cut/Copy/Paste gadgets (+rotation!)
