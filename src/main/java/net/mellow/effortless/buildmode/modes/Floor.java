@@ -6,6 +6,7 @@ import java.util.List;
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.blocks.Vec3;
+import net.mellow.effortless.blocks.BlockPos.Dimension;
 import net.mellow.effortless.buildmode.BuildModes;
 import net.mellow.effortless.buildmode.TwoClicksBuildMode;
 import net.mellow.effortless.buildmode.VoxelRenderer;
@@ -61,7 +62,7 @@ public class Floor extends TwoClicksBuildMode {
         //Then only 1 can be valid, return that one
         Criteria selected = criteriaList.get(0);
 
-        return BlockPos.containing(selected.planeBound);
+        return getFinalPos(player, firstPos, selected.planeBound, Dimension.Y);
     }
 
     public static List<BlockPos> getFloorBlocks(BlockPos from, BlockPos to, boolean fill) {

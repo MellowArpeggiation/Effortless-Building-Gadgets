@@ -31,8 +31,8 @@ public class Cylinder extends ThreeClicksBuildMode {
         BuildingAction tilt = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_TILT);
 
         BlockPos pos2 = tilt == BuildingAction.CIRCLE_VERTICAL
-            ? Cube.findHeight(player, pos1, true)
-            : Cube.findLength(player, pos1, pos0.x == pos1.x ? Dimension.X : Dimension.Z, true);
+            ? Cube.findHeight(player, pos0, pos1, true)
+            : Cube.findLength(player, pos0, pos1, pos0.x == pos1.x ? Dimension.X : Dimension.Z, true);
         if (pos2 == null) return 0;
 
         BuildingAction start = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_START);
@@ -67,8 +67,8 @@ public class Cylinder extends ThreeClicksBuildMode {
         BuildingAction tilt = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_TILT);
 
         BlockPos pos2 = tilt == BuildingAction.CIRCLE_VERTICAL
-            ? Cube.findHeight(player, pos1, true)
-            : Cube.findLength(player, pos1, pos0.x == pos1.x ? Dimension.X : Dimension.Z, true);
+            ? Cube.findHeight(player, pos0, pos1, true)
+            : Cube.findLength(player, pos0, pos1, pos0.x == pos1.x ? Dimension.X : Dimension.Z, true);
         if (pos2 == null) return;
 
         BuildingAction start = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_START);

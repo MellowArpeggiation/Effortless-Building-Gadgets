@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.mellow.effortless.blocks.BlockPos;
+import net.mellow.effortless.blocks.BlockPos.Dimension;
 import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.blocks.Vec3;
 import net.mellow.effortless.buildmode.BuildModes;
@@ -48,11 +49,11 @@ public class Wall extends TwoClicksBuildMode {
 
         //X
         Vec3 xBound = BuildModes.findXBound(firstPos.x, start, look);
-        criteriaList.add(new Criteria(xBound, firstPos, start, look));
+        criteriaList.add(new Criteria(xBound, firstPos, start, look, Dimension.X));
 
         //Z
         Vec3 zBound = BuildModes.findZBound(firstPos.z, start, look);
-        criteriaList.add(new Criteria(zBound, firstPos, start, look));
+        criteriaList.add(new Criteria(zBound, firstPos, start, look, Dimension.Z));
 
         //Remove invalid criteria
         // int reach = CapabilityHandler.getBuildModeReach(player);
@@ -76,7 +77,7 @@ public class Wall extends TwoClicksBuildMode {
             }
         }
 
-        return BlockPos.containing(selected.planeBound);
+        return getFinalPos(player, firstPos, selected.planeBound, selected.extendsIn);
     }
 
     public static List<BlockPos> getWallBlocks(BlockPos from, BlockPos to, boolean fill) {
@@ -134,12 +135,14 @@ public class Wall extends TwoClicksBuildMode {
         Vec3 planeBound;
         double distToPlayerSq;
         double angle;
+        Dimension extendsIn;
 
-        Criteria(Vec3 planeBound, BlockPos firstPos, Vec3 start, Vec3 look) {
+        Criteria(Vec3 planeBound, BlockPos firstPos, Vec3 start, Vec3 look, Dimension extendsIn) {
             this.planeBound = planeBound;
             this.distToPlayerSq = this.planeBound.distanceToSqr(start);
             Vec3 wall = this.planeBound.subtract(Vec3.atLowerCornerOf(firstPos));
             this.angle = wall.x * look.x + wall.z * look.z; //dot product ignoring y (looking up/down should not affect this angle)
+            this.extendsIn = extendsIn;
         }
 
         //check if its not behind the player and its not too close and not too far

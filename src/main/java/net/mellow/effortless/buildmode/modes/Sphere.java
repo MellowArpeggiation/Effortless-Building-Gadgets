@@ -24,7 +24,7 @@ public class Sphere extends ThreeClicksBuildMode {
 
     @Override
     public int add(ItemStack stack, PlaceableStack selected, World world, EntityPlayer player, BlockPos pos0, BlockPos pos1) {
-        BlockPos pos2 = Cube.findHeight(player, pos1, true);
+        BlockPos pos2 = Cube.findHeight(player, pos0, pos1, true);
         if (pos2 == null) return 0;
 
         BuildingAction start = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_START);
@@ -52,7 +52,7 @@ public class Sphere extends ThreeClicksBuildMode {
 
     @Override
     public void render(ItemStack stack, World world, EntityPlayer player, BlockPos pos0, BlockPos pos1, float partialTicks) {
-        BlockPos pos2 = Cube.findHeight(player, pos1, true);
+        BlockPos pos2 = Cube.findHeight(player, pos0, pos1, true);
         if (pos2 == null) return;
 
         BuildingAction start = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_START);

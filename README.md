@@ -35,6 +35,9 @@ Requires power from:
 * **RF** (CoFH)
 * **HE** (NTM)
 
+## Tips
+* Hold crouch to lock dimensions, helpful for making perfect circles quickly!
+
 ## Planned features
 * Cut/Copy/Paste gadgets (+rotation!)
 * (When in Bauble slot) use tools like pickaxes/shovels for shape breaking

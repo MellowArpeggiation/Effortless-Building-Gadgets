@@ -7,6 +7,8 @@ import net.mellow.effortless.blocks.BlockMeta;
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.blocks.IConsumableStack;
 import net.mellow.effortless.blocks.PlaceableStack;
+import net.mellow.effortless.blocks.Vec3;
+import net.mellow.effortless.blocks.BlockPos.Dimension;
 import net.mellow.effortless.buildmode.History.HistoryBlock;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -98,6 +100,34 @@ public abstract class BaseBuildMode {
         world.playSoundEffect(player.posX, player.posY, player.posZ, selected.place.block.stepSound.func_150496_b(), (selected.place.block.stepSound.getVolume() + 1.0F) / 2.0F, selected.place.block.stepSound.getPitch() * 0.8F);
 
         return blocksPlaced;
+    }
+
+    public static BlockPos getFinalPos(EntityPlayer player, BlockPos from, Vec3 pos) {
+        return getFinalPos(player, from, pos, false, false, false);
+    }
+
+    public static BlockPos getFinalPos(EntityPlayer player, BlockPos from, Vec3 pos, Dimension skip) {
+        return getFinalPos(player, from, pos, skip == Dimension.X, skip == Dimension.Y, skip == Dimension.Z);
+    }
+
+    public static BlockPos getFinalPos(EntityPlayer player, BlockPos from, Vec3 pos, boolean skipX, boolean skipY, boolean skipZ) {
+        if (player.isSneaking()) {
+            BlockPos to = BlockPos.containing(pos);
+            BlockPos offset = to.subtract(from);
+
+            int absX = Math.abs(offset.x);
+            int absY = Math.abs(offset.y);
+            int absZ = Math.abs(offset.z);
+            int signX = offset.x < 0 ? -1 : 1;
+            int signY = offset.y < 0 ? -1 : 1;
+            int signZ = offset.z < 0 ? -1 : 1;
+
+            int max = Math.max(Math.max(absX, absY), absZ);
+
+            return from.add(skipX ? offset.x : max * signX, skipY ? offset.y : max * signY, skipZ ? offset.z : max * signZ);
+        }
+
+        return BlockPos.containing(pos);
     }
 
     public static int build(World world, EntityPlayer player, PlaceableStack selected, BlockPos position, boolean replaceAny) {

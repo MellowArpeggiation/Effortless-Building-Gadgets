@@ -57,7 +57,7 @@ public class DiagonalLine extends BaseBuildMode {
                 return 0;
             }
 
-            BlockPos pos2 = Cube.findHeight(player, pos1, true);
+            BlockPos pos2 = Cube.findHeight(player, pos0, pos1, true);
             if (pos2 == null) return 0;
 
             int built = build(world, player, place, getDiagonalLineBlocks(pos0, pos2, 10), false);
@@ -151,7 +151,7 @@ public class DiagonalLine extends BaseBuildMode {
 
             updateHighlight(pos0, pos1);
         } else {
-            BlockPos pos2 = Cube.findHeight(player, pos1, true);
+            BlockPos pos2 = Cube.findHeight(player, pos0, pos1, true);
             if (pos2 == null) return;
 
             VoxelRenderer.renderBlocks(getDiagonalLineBlocks(pos0, pos2, 10), player, partialTicks);

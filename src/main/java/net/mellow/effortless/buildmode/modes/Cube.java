@@ -26,7 +26,7 @@ public class Cube extends ThreeClicksBuildMode {
 
     @Override
     public int add(ItemStack stack, PlaceableStack selected, World world, EntityPlayer player, BlockPos pos0, BlockPos pos1) {
-        BlockPos pos2 = findHeight(player, pos1, true);
+        BlockPos pos2 = findHeight(player, pos0, pos1, true);
         if (pos2 == null) return 0;
 
         BuildingAction fillMode = ItemBuildingGadget.getAction(stack, BuildingOption.CUBE_FILL);
@@ -48,7 +48,7 @@ public class Cube extends ThreeClicksBuildMode {
 
     @Override
     public void render(ItemStack stack, World world, EntityPlayer player, BlockPos pos0, BlockPos pos1, float partialTicks) {
-        BlockPos pos2 = findHeight(player, pos1, true);
+        BlockPos pos2 = findHeight(player, pos0, pos1, true);
         if (pos2 == null) return;
 
         BuildingAction fillMode = ItemBuildingGadget.getAction(stack, BuildingOption.CUBE_FILL);
@@ -58,40 +58,32 @@ public class Cube extends ThreeClicksBuildMode {
         updateHighlight(pos0, pos2);
     }
 
-    public static BlockPos findHeight(EntityPlayer player, BlockPos secondPos, boolean skipRaytrace) {
-        return findLength(player, secondPos, Dimension.Y, skipRaytrace);
+    public static BlockPos findHeight(EntityPlayer player, BlockPos firstPos, BlockPos secondPos, boolean skipRaytrace) {
+        return findLength(player, firstPos, secondPos, Dimension.Y, skipRaytrace);
     }
 
-    public static BlockPos findLength(EntityPlayer player, BlockPos secondPos, Dimension dimension, boolean skipRaytrace) {
+    public static BlockPos findLength(EntityPlayer player, BlockPos firstPos, BlockPos secondPos, Dimension dimension, boolean skipRaytrace) {
         Vec3 look = BuildModes.getPlayerLookVec(player);
         Vec3 start = BuildModes.getPlayerPos(player);
 
         List<LengthCriteria> criteriaList = new ArrayList<>(3);
 
-        if (dimension == Dimension.X) {
-            //Y
+        //X
+        if (dimension != Dimension.X) { 
+            Vec3 xBound = BuildModes.findXBound(secondPos.x, start, look);
+            criteriaList.add(new LengthCriteria(xBound, secondPos, start, dimension));
+        }
+
+        //Y
+        if (dimension != Dimension.Y) {
             Vec3 yBound = BuildModes.findXBound(secondPos.y, start, look);
-            criteriaList.add(new LengthCriteria(yBound, secondPos, start, Dimension.X));
+            criteriaList.add(new LengthCriteria(yBound, secondPos, start, dimension));
+        }
 
-            //Z
+        //Z
+        if (dimension != Dimension.Z) { 
             Vec3 zBound = BuildModes.findZBound(secondPos.z, start, look);
-            criteriaList.add(new LengthCriteria(zBound, secondPos, start, Dimension.X));
-        } else if (dimension == Dimension.Z) {
-            //X
-            Vec3 xBound = BuildModes.findXBound(secondPos.x, start, look);
-            criteriaList.add(new LengthCriteria(xBound, secondPos, start, Dimension.Z));
-
-            //Y
-            Vec3 yBound = BuildModes.findZBound(secondPos.y, start, look);
-            criteriaList.add(new LengthCriteria(yBound, secondPos, start, Dimension.Z));
-        } else {
-            //X
-            Vec3 xBound = BuildModes.findXBound(secondPos.x, start, look);
-            criteriaList.add(new LengthCriteria(xBound, secondPos, start, Dimension.Y));
-
-            //Z
-            Vec3 zBound = BuildModes.findZBound(secondPos.z, start, look);
-            criteriaList.add(new LengthCriteria(zBound, secondPos, start, Dimension.Y));
+            criteriaList.add(new LengthCriteria(zBound, secondPos, start, dimension));
         }
 
         //Remove invalid criteria
@@ -121,7 +113,8 @@ public class Cube extends ThreeClicksBuildMode {
                 }
             }
         }
-        return BlockPos.containing(selected.lineBound);
+
+        return getFinalPos(player, firstPos, selected.lineBound, dimension != Dimension.X, dimension != Dimension.Y, dimension != Dimension.Z);
     }
 
     public static List<BlockPos> getFloorBlocksUsingCubeFill(BlockPos from, BlockPos to, BuildingAction fill) {
