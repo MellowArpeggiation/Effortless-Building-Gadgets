@@ -1,8 +1,8 @@
 package net.mellow.effortless.events;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import net.mellow.effortless.blocks.ConstructionSet;
 import net.mellow.effortless.blocks.PlaceableStack;
-import net.mellow.effortless.buildmode.BaseBuildMode;
 import net.mellow.effortless.compat.CompatBaublesExpanded;
 import net.mellow.effortless.items.ItemBuildingGadget;
 import net.minecraft.client.Minecraft;
@@ -26,7 +26,7 @@ public class ClientEvents {
         if (event.type != ElementType.ALL) return;
         ItemBuildingGadget.isRenderingOverlay = true;
 
-        if (BaseBuildMode.highlightTitle == null) return;
+        if (ConstructionSet.highlightTitle == null) return;
 
         Minecraft mc = Minecraft.getMinecraft();
         EntityPlayer player = mc.thePlayer;

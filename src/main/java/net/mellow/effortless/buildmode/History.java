@@ -2,7 +2,6 @@ package net.mellow.effortless.buildmode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -179,20 +178,6 @@ public class History {
     public static Map<BlockPos, PlaceableStack> getPlaceableMap(EntityPlayer player) {
         return placedBlocks.get(player.getUniqueID());
     }
-
-    // // Removes blocks from the list that the player is not allowed to break
-    // public static void filterBreakable(EntityPlayer player, List<BlockPos> blocks) {
-    //     Iterator<BlockPos> iterator = blocks.iterator();
-
-    //     while (iterator.hasNext()) {
-    //         BlockPos pos = iterator.next();
-
-    //         Block block = world.getBlock
-
-    //         // first, remove blocks we are NOT allowed to touch
-
-    //     }
-    // }
 
     public History(List<HistoryBlock> blocks, PlaceableStack placed) {
         this.state = blocks.toArray(new HistoryBlock[blocks.size()]);

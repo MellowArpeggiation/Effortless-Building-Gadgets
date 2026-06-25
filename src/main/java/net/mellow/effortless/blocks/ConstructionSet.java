@@ -6,6 +6,7 @@ import java.util.List;
 import net.mellow.effortless.buildmode.History;
 import net.mellow.effortless.buildmode.History.HistoryBlock;
 import net.mellow.effortless.buildmode.VoxelRenderer;
+import net.mellow.effortless.buildmode.BaseBuildMode.Operation;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -24,6 +25,13 @@ public class ConstructionSet {
         this.positions = positions;
         this.from = from;
         this.to = to;
+    }
+
+    public ConstructionSet(BlockPos pos) {
+        this.positions = new ArrayList<>();
+        this.positions.add(pos);
+        this.from = pos;
+        this.to = pos;
     }
 
     public int build(World world, EntityPlayer player, PlaceableStack selected, boolean replaceAny) {
@@ -98,8 +106,12 @@ public class ConstructionSet {
     }
 
     public void render(EntityPlayer player, float partialTicks) {
-        VoxelRenderer.renderBlocks(positions, player, partialTicks);
-        updateHighlight(from, to, positions.size());
+        render(player, partialTicks, false);
+    }
+
+    public void render(EntityPlayer player, float partialTicks, boolean skipHighlight) {
+        VoxelRenderer.renderBlocks(positions, player, Operation.PLACE, partialTicks);
+        if (!skipHighlight) updateHighlight(from, to, positions.size());
     }
 
     private static void updateHighlight(BlockPos from, BlockPos to, int count) {

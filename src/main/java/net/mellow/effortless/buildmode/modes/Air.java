@@ -1,11 +1,10 @@
 package net.mellow.effortless.buildmode.modes;
 
 import net.mellow.effortless.blocks.BlockPos;
+import net.mellow.effortless.blocks.ConstructionSet;
 import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.blocks.Vec3;
 import net.mellow.effortless.buildmode.BaseBuildMode;
-import net.mellow.effortless.buildmode.BuildModes;
-import net.mellow.effortless.buildmode.VoxelRenderer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
@@ -17,15 +16,23 @@ import net.minecraftforge.common.util.ForgeDirection;
 public class Air extends BaseBuildMode {
 
     @Override
-    public int reach(ItemStack stack) {
-        return 6;
+    public boolean click(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
+        return true;
     }
 
     @Override
-    public int add(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop) {
-        if (world.isRemote) return 0;
+    public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
+        if (mop.typeOfHit == MovingObjectType.MISS) {
+            return new ConstructionSet(new BlockPos(mop.blockX, mop.blockY, mop.blockZ));
+        }
 
-        if (mop == null) return 0;
+        BlockPos pos = BlockPos.fromRaycastSide(mop);
+        if (pos == null) return null;
+
+        return new ConstructionSet(pos);
+    }
+    
+    public void savePlaceable(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop) {
         if (mop.typeOfHit == MovingObjectType.MISS) {
             BlockPos pos = new BlockPos(mop.blockX, mop.blockY, mop.blockZ);
 
@@ -46,33 +53,33 @@ public class Air extends BaseBuildMode {
 
             PlaceableStack place = PlaceableStack.getPlaceableStack(selected, world, player, pos.x, pos.y, pos.z, facing.ordinal(), new Vec3(mop.hitVec));
             
-            return build(world, player, place, pos, false);
+            stack.stackTagCompound.setTag("place", place.save());
         } else {
             BlockPos pos = BlockPos.fromRaycastSide(mop);
-            if (pos == null) return 0;
 
             PlaceableStack place = PlaceableStack.getPlaceableStack(selected, world, player, pos.x, pos.y, pos.z, mop.sideHit, new Vec3(mop.hitVec));
 
-            return build(world, player, place, pos, false);
+            stack.stackTagCompound.setTag("place", place.save());
         }
+    }
+
+    @Override
+    public void render(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, float partialTicks) {
+        if (mop.typeOfHit == MovingObjectType.MISS) {
+            ConstructionSet set = new ConstructionSet(new BlockPos(mop.blockX, mop.blockY, mop.blockZ));
+            set.render(player, partialTicks, true);
+        } else {
+            ConstructionSet set = new ConstructionSet(BlockPos.fromRaycastSide(mop));
+            set.render(player, partialTicks, true);
+        }
+    }
+
+    @Override
+    public int reach(ItemStack stack) {
+        return 6;
     }
 
     @Override public boolean clear(ItemStack stack) { return false; }
     @Override public boolean isPlacing(ItemStack stack) { return false; }
-
-    @Override
-    public void render(ItemStack stack, World world, EntityPlayer player, float partialTicks) {
-        MovingObjectPosition mop = BuildModes.getMop(player, reach(stack));
-        if (mop == null) return;
-
-        if (mop.typeOfHit == MovingObjectType.MISS) {
-            BlockPos pos = new BlockPos(mop.blockX, mop.blockY, mop.blockZ);
-            VoxelRenderer.renderBlock(pos, player, partialTicks);
-        } else {
-            BlockPos pos = BlockPos.fromRaycastSide(mop);
-            if (pos == null) return;
-            VoxelRenderer.renderBlock(pos, player, partialTicks);
-        }
-    }
     
 }

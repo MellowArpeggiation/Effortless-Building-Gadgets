@@ -5,48 +5,22 @@ import java.util.List;
 
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.blocks.ConstructionSet;
-import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.blocks.Vec3;
 import net.mellow.effortless.buildmode.BuildModes;
 import net.mellow.effortless.buildmode.TwoClicksBuildMode;
-import net.mellow.effortless.buildmode.VoxelRenderer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 
 public class Line extends TwoClicksBuildMode {
 
-    // @Override
-    // public BlockPos getSecondPos(ItemStack stack, World world, EntityPlayer player, BlockPos from) {
-    //     return findLine(player, from, true);
-    // }
-
     @Override
-    public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, BlockPos from) {
+    public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, BlockPos from) {
         BlockPos to = findLine(player, from, true);
         if (to == null) return null;
 
         return new ConstructionSet(getLineBlocks(from, to), from, to);
-    }
-
-    @Override
-    public int add(ItemStack stack, PlaceableStack selected, World world, EntityPlayer player, BlockPos from) {
-        BlockPos to = findLine(player, from, true);
-        if (to == null) return 0;
-
-        List<BlockPos> blocks = getLineBlocks(from, to);
-        return build(world, player, selected, blocks, false);
-    }
-
-    @Override
-    public void render(ItemStack stack, World world, EntityPlayer player, BlockPos from, float partialTicks) {
-        BlockPos to = findLine(player, from, true);
-        if (to == null) return;
-
-        List<BlockPos> blocks = getLineBlocks(from, to);
-        VoxelRenderer.renderBlocks(blocks, player, partialTicks);
-
-        updateHighlight(from, to, blocks.size());
     }
 
 

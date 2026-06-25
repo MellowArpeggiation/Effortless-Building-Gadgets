@@ -10,21 +10,19 @@ import api.hbm.energymk2.IBatteryItem;
 import baubles.api.BaubleType;
 import baubles.api.expanded.BaubleExpandedSlots;
 import baubles.api.expanded.IBaubleExpanded;
+import cofh.api.energy.IEnergyContainerItem;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import cofh.api.energy.IEnergyContainerItem;
 import net.mellow.effortless.Config;
 import net.mellow.effortless.Keybinds;
-import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.blocks.ConstructionSet;
 import net.mellow.effortless.blocks.PlaceableStack;
-import net.mellow.effortless.blocks.Vec3;
+import net.mellow.effortless.buildmode.BaseBuildMode.Operation;
 import net.mellow.effortless.buildmode.BuildModes;
 import net.mellow.effortless.buildmode.History;
-import net.mellow.effortless.buildmode.BaseBuildMode.Operation;
 import net.mellow.effortless.buildmode.ModeOptions.BuildingAction;
 import net.mellow.effortless.buildmode.ModeOptions.BuildingMode;
 import net.mellow.effortless.buildmode.ModeOptions.BuildingOption;
@@ -118,6 +116,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         if (mode.handler == null) return stack;
 
         MovingObjectPosition mop = BuildModes.getMop(player, mode.handler.reach(stack));
+        if (mop == null) return stack; // only occurs on NaN
 
         boolean requiresPower = Config.consumesEnergy && !player.capabilities.isCreativeMode && (hasRF || hasHE);
         int energy = stack.stackTagCompound.getInteger("energy");
@@ -128,22 +127,18 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         }
 
         mode.handler.savePlaceable(stack, selected, world, player, mop);
-
-        // int blocksPlaced = mode.handler.add(stack, selected, world, player, mop);
         
+        // attempt to commit blocks to world if true, can still be cancelled if the set doesn't resolve
         if (mode.handler.click(stack, world, player, mop)) {
-            ConstructionSet set = mode.handler.getBlocks(stack, world, player);
+            ConstructionSet set = mode.handler.getBlocks(stack, world, player, mop);
             if (set == null) return stack;
 
+            mode.handler.clear(stack);
+
             PlaceableStack placed = mode.handler.getPlaceable(stack);
-            if (placed == null) {
-                mode.handler.clear(stack);
-                return stack;
-            }
+            if (placed == null) return stack;
 
             int blocksPlaced = set.build(world, player, placed, false);
-
-            mode.handler.clear(stack);
 
             if (requiresPower) {
                 stack.stackTagCompound.setInteger("energy", Math.max(0, energy - blocksPlaced * Config.consumptionRF));
@@ -158,12 +153,6 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
 
         BuildingMode mode = getMode(stack);
         if (mode.handler == null) return false;
-
-        // MovingObjectPosition mop = BuildModes.getMop(player, mode.handler.reach(stack));
-
-        // int blocksBroken = mode.handler.click(stack, null, player.worldObj, player, mop, Operation.BREAK);
-
-        // return false;
 
         return mode.handler.clear(stack);
     }
@@ -242,8 +231,11 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
 
         BuildingMode mode = getMode(stack);
         if (mode.handler == null) return;
+
+        MovingObjectPosition mop = BuildModes.getMop(player, mode.handler.reach(stack));
+        if (mop == null) return; // only occurs for NaN
         
-        mode.handler.renderNew(stack, world, player, partialTicks);
+        mode.handler.render(stack, world, player, mop, partialTicks);
     }
 
     @Override

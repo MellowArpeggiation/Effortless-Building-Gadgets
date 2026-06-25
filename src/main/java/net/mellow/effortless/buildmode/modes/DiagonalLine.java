@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.mellow.effortless.blocks.BlockPos;
+import net.mellow.effortless.blocks.ConstructionSet;
 import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.blocks.Vec3;
 import net.mellow.effortless.buildmode.BaseBuildMode;
@@ -20,95 +21,95 @@ import net.minecraft.world.World;
 
 public class DiagonalLine extends BaseBuildMode {
 
-    @Override
-    public int add(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop) {
-        BuildingAction type = ItemBuildingGadget.getAction(stack, BuildingOption.LINE_DRAW);
+    // @Override
+    // public int add(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop) {
+    //     BuildingAction type = ItemBuildingGadget.getAction(stack, BuildingOption.LINE_DRAW);
 
-        if (type == BuildingAction.LINE_CONSTRUCT) return addConstruct(stack, selected, world, player, mop);
-        return addPointToPoint(stack, selected, world, player, mop);
-    }
+    //     if (type == BuildingAction.LINE_CONSTRUCT) return addConstruct(stack, selected, world, player, mop);
+    //     return addPointToPoint(stack, selected, world, player, mop);
+    // }
 
-    private int addConstruct(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop) {
-        BlockPos pos0 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
-        BlockPos pos1 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos1"));
+    // private int addConstruct(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop) {
+    //     BlockPos pos0 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
+    //     BlockPos pos1 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos1"));
 
-        if (pos0 == null) {
-            pos0 = BlockPos.fromRaycastReplaceable(world, mop);
-            if (pos0 == null) return 0;
+    //     if (pos0 == null) {
+    //         pos0 = BlockPos.fromRaycastReplaceable(world, mop);
+    //         if (pos0 == null) return 0;
 
-            PlaceableStack place = PlaceableStack.getPlaceableStack(selected, world, player, pos0.x, pos0.y, pos0.z, mop.sideHit, new Vec3(mop.hitVec));
+    //         PlaceableStack place = PlaceableStack.getPlaceableStack(selected, world, player, pos0.x, pos0.y, pos0.z, mop.sideHit, new Vec3(mop.hitVec));
 
-            stack.stackTagCompound.setTag("pos0", pos0.save());
-            stack.stackTagCompound.setTag("place", place.save());
-        } else if (pos1 == null) {
-            pos1 = Floor.findFloor(player, pos0, true);
-            if (pos1 == null) return 0;
+    //         stack.stackTagCompound.setTag("pos0", pos0.save());
+    //         stack.stackTagCompound.setTag("place", place.save());
+    //     } else if (pos1 == null) {
+    //         pos1 = Floor.findFloor(player, pos0, true);
+    //         if (pos1 == null) return 0;
 
-            stack.stackTagCompound.setTag("pos1", pos1.save());
-        } else {
-            if (world.isRemote) {
-                clear(stack);
-                return 0;
-            }
+    //         stack.stackTagCompound.setTag("pos1", pos1.save());
+    //     } else {
+    //         if (world.isRemote) {
+    //             clear(stack);
+    //             return 0;
+    //         }
 
-            PlaceableStack place = PlaceableStack.load(stack.stackTagCompound.getCompoundTag("place"));
-            if (place == null) {
-                clear(stack);
-                return 0;
-            }
+    //         PlaceableStack place = PlaceableStack.load(stack.stackTagCompound.getCompoundTag("place"));
+    //         if (place == null) {
+    //             clear(stack);
+    //             return 0;
+    //         }
 
-            BlockPos pos2 = Cube.findHeight(player, pos0, pos1, true);
-            if (pos2 == null) return 0;
+    //         BlockPos pos2 = Cube.findHeight(player, pos0, pos1, true);
+    //         if (pos2 == null) return 0;
 
-            int built = build(world, player, place, getDiagonalLineBlocks(pos0, pos2, 10), false);
+    //         int built = build(world, player, place, getDiagonalLineBlocks(pos0, pos2, 10), false);
 
-            if (built <= 0) return 0;
+    //         if (built <= 0) return 0;
 
-            clear(stack);
+    //         clear(stack);
             
-            return built;
-        }
+    //         return built;
+    //     }
 
-        return 0;
-    }
+    //     return 0;
+    // }
 
-    private int addPointToPoint(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop) {
-        BlockPos pos0 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
+    // private int addPointToPoint(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop) {
+    //     BlockPos pos0 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
 
-        if (pos0 == null) {
-            pos0 = BlockPos.fromRaycastReplaceable(world, mop);
-            if (pos0 == null) return 0;
+    //     if (pos0 == null) {
+    //         pos0 = BlockPos.fromRaycastReplaceable(world, mop);
+    //         if (pos0 == null) return 0;
 
-            PlaceableStack place = PlaceableStack.getPlaceableStack(selected, world, player, pos0.x, pos0.y, pos0.z, mop.sideHit, new Vec3(mop.hitVec));
+    //         PlaceableStack place = PlaceableStack.getPlaceableStack(selected, world, player, pos0.x, pos0.y, pos0.z, mop.sideHit, new Vec3(mop.hitVec));
 
-            stack.stackTagCompound.setTag("pos0", pos0.save());
-            stack.stackTagCompound.setTag("place", place.save());
-        } else {
-            if (world.isRemote) {
-                clear(stack);
-                return 0;
-            }
+    //         stack.stackTagCompound.setTag("pos0", pos0.save());
+    //         stack.stackTagCompound.setTag("place", place.save());
+    //     } else {
+    //         if (world.isRemote) {
+    //             clear(stack);
+    //             return 0;
+    //         }
 
-            PlaceableStack place = PlaceableStack.load(stack.stackTagCompound.getCompoundTag("place"));
-            if (place == null) {
-                clear(stack);
-                return 0;
-            }
+    //         PlaceableStack place = PlaceableStack.load(stack.stackTagCompound.getCompoundTag("place"));
+    //         if (place == null) {
+    //             clear(stack);
+    //             return 0;
+    //         }
 
-            BlockPos pos2 = BlockPos.fromRaycastReplaceable(world, mop);
-            if (pos2 == null) return 0;
+    //         BlockPos pos2 = BlockPos.fromRaycastReplaceable(world, mop);
+    //         if (pos2 == null) return 0;
 
-            int built = build(world, player, place, getDiagonalLineBlocks(pos0, pos2, 10), false);
+    //         int built = build(world, player, place, getDiagonalLineBlocks(pos0, pos2, 10), false);
 
-            if (built <= 0) return 0;
+    //         if (built <= 0) return 0;
 
-            clear(stack);
+    //         clear(stack);
             
-            return built;
-        }
+    //         return built;
+    //     }
 
-        return 0;
-    }
+    //     return 0;
+    // }
 
     @Override
     public boolean clear(ItemStack stack) {
@@ -123,64 +124,64 @@ public class DiagonalLine extends BaseBuildMode {
         return stack.stackTagCompound.hasKey("pos0");
     }
 
-    @Override
-    public void render(ItemStack stack, World world, EntityPlayer player, float partialTicks) {
-        BuildingAction type = ItemBuildingGadget.getAction(stack, BuildingOption.LINE_DRAW);
+    // @Override
+    // public void render(ItemStack stack, World world, EntityPlayer player, float partialTicks) {
+    //     BuildingAction type = ItemBuildingGadget.getAction(stack, BuildingOption.LINE_DRAW);
 
-        if (type == BuildingAction.LINE_CONSTRUCT) {
-            renderConstruct(stack, world, player, partialTicks);
-        } else {
-            renderPointToPoint(stack, world, player, partialTicks);
-        }
-    }
+    //     if (type == BuildingAction.LINE_CONSTRUCT) {
+    //         renderConstruct(stack, world, player, partialTicks);
+    //     } else {
+    //         renderPointToPoint(stack, world, player, partialTicks);
+    //     }
+    // }
 
-    public void renderConstruct(ItemStack stack, World world, EntityPlayer player, float partialTicks) {
-        BlockPos pos0 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
-        BlockPos pos1 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos1"));
+    // public void renderConstruct(ItemStack stack, World world, EntityPlayer player, float partialTicks) {
+    //     BlockPos pos0 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
+    //     BlockPos pos1 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos1"));
 
-        if (pos0 == null) {
-            MovingObjectPosition mop = BuildModes.getMop(player, reach(stack));
-            if (mop == null) return;
+    //     if (pos0 == null) {
+    //         MovingObjectPosition mop = BuildModes.getMop(player, reach(stack));
+    //         if (mop == null) return;
 
-            Minecraft.getMinecraft().renderGlobal.drawSelectionBox(player, mop, 0, partialTicks);
-        } else if (pos1 == null) {
-            pos1 = Floor.findFloor(player, pos0, true);
-            if (pos1 == null) return;
+    //         Minecraft.getMinecraft().renderGlobal.drawSelectionBox(player, mop, 0, partialTicks);
+    //     } else if (pos1 == null) {
+    //         pos1 = Floor.findFloor(player, pos0, true);
+    //         if (pos1 == null) return;
 
-            List<BlockPos> blocks = getDiagonalLineBlocks(pos0, pos1, 10);
-            VoxelRenderer.renderBlocks(blocks, player, partialTicks);
+    //         List<BlockPos> blocks = getDiagonalLineBlocks(pos0, pos1, 10);
+    //         VoxelRenderer.renderBlocks(blocks, player, partialTicks);
 
-            updateHighlight(pos0, pos1, blocks.size());
-        } else {
-            BlockPos pos2 = Cube.findHeight(player, pos0, pos1, true);
-            if (pos2 == null) return;
+    //         updateHighlight(pos0, pos1, blocks.size());
+    //     } else {
+    //         BlockPos pos2 = Cube.findHeight(player, pos0, pos1, true);
+    //         if (pos2 == null) return;
 
-            List<BlockPos> blocks = getDiagonalLineBlocks(pos0, pos2, 10);
-            VoxelRenderer.renderBlocks(blocks, player, partialTicks);
+    //         List<BlockPos> blocks = getDiagonalLineBlocks(pos0, pos2, 10);
+    //         VoxelRenderer.renderBlocks(blocks, player, partialTicks);
 
-            updateHighlight(pos0, pos2, blocks.size());
-        }
-    }
+    //         updateHighlight(pos0, pos2, blocks.size());
+    //     }
+    // }
 
-    public void renderPointToPoint(ItemStack stack, World world, EntityPlayer player, float partialTicks) {
-        BlockPos pos0 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
+    // public void renderPointToPoint(ItemStack stack, World world, EntityPlayer player, float partialTicks) {
+    //     BlockPos pos0 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
 
-        if (pos0 == null) {
-            MovingObjectPosition mop = BuildModes.getMop(player, reach(stack));
-            if (mop == null) return;
+    //     if (pos0 == null) {
+    //         MovingObjectPosition mop = BuildModes.getMop(player, reach(stack));
+    //         if (mop == null) return;
 
-            Minecraft.getMinecraft().renderGlobal.drawSelectionBox(player, mop, 0, partialTicks);
-        } else {
-            MovingObjectPosition mop = BuildModes.getMop(player, reach(stack));
-            BlockPos pos1 = BlockPos.fromRaycastReplaceable(world, mop);
-            if (pos1 == null) return;
+    //         Minecraft.getMinecraft().renderGlobal.drawSelectionBox(player, mop, 0, partialTicks);
+    //     } else {
+    //         MovingObjectPosition mop = BuildModes.getMop(player, reach(stack));
+    //         BlockPos pos1 = BlockPos.fromRaycastReplaceable(world, mop);
+    //         if (pos1 == null) return;
 
-            List<BlockPos> blocks = getDiagonalLineBlocks(pos0, pos1, 10);
-            VoxelRenderer.renderBlocks(blocks, player, partialTicks);
+    //         List<BlockPos> blocks = getDiagonalLineBlocks(pos0, pos1, 10);
+    //         VoxelRenderer.renderBlocks(blocks, player, partialTicks);
 
-            updateHighlight(pos0, pos1, blocks.size());
-        }
-    }
+    //         updateHighlight(pos0, pos1, blocks.size());
+    //     }
+    // }
 
     //Add diagonal line from first to second
     public static List<BlockPos> getDiagonalLineBlocks(BlockPos from, BlockPos to, float sampleMultiplier) {
@@ -199,6 +200,25 @@ public class DiagonalLine extends BaseBuildMode {
         }
 
         return list;
+    }
+
+    @Override
+    public boolean click(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'click'");
+    }
+
+    @Override
+    public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getBlocks'");
+    }
+
+    @Override
+    public void render(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop,
+            float partialTicks) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'render'");
     }
     
 }

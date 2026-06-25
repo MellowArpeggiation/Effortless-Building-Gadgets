@@ -205,14 +205,4 @@ public class VoxelRenderer {
         renderBlocks(list, player, operation, partialTicks);
     }
     
-    // TODO: kill these ones too
-    public static void renderBlock(BlockPos block, EntityPlayer player, float partialTicks) {
-        int warnonme = 0;
-        renderBlock(block, player, Operation.PLACE, partialTicks);
-    }
-
-    public static void renderBlocks(List<BlockPos> blocks, EntityPlayer player, float partialTicks) {
-        renderBlocks(blocks, player, Operation.PLACE, partialTicks);
-    }
-    
 }

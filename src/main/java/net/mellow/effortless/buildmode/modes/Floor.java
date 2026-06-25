@@ -4,41 +4,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.mellow.effortless.blocks.BlockPos;
-import net.mellow.effortless.blocks.PlaceableStack;
-import net.mellow.effortless.blocks.Vec3;
 import net.mellow.effortless.blocks.BlockPos.Dimension;
+import net.mellow.effortless.blocks.ConstructionSet;
+import net.mellow.effortless.blocks.Vec3;
 import net.mellow.effortless.buildmode.BuildModes;
-import net.mellow.effortless.buildmode.TwoClicksBuildMode;
-import net.mellow.effortless.buildmode.VoxelRenderer;
 import net.mellow.effortless.buildmode.ModeOptions.BuildingAction;
 import net.mellow.effortless.buildmode.ModeOptions.BuildingOption;
+import net.mellow.effortless.buildmode.TwoClicksBuildMode;
 import net.mellow.effortless.items.ItemBuildingGadget;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 
 public class Floor extends TwoClicksBuildMode {
 
     @Override
-    public int add(ItemStack stack, PlaceableStack selected, World world, EntityPlayer player, BlockPos from) {
+    public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, BlockPos from) {
         BlockPos to = findFloor(player, from, true);
-        if (to == null) return 0;
-        
-        BuildingAction fillMode = ItemBuildingGadget.getAction(stack, BuildingOption.FILL);
-        List<BlockPos> blocks = getFloorBlocks(from, to, fillMode == BuildingAction.FULL);
-        return build(world, player, selected, blocks, false);
-    }
+        if (to == null) return null;
 
-    @Override
-    public void render(ItemStack stack, World world, EntityPlayer player, BlockPos from, float partialTicks) {
-        BlockPos to = findFloor(player, from, true);
-        if (to == null) return;
-        
         BuildingAction fillMode = ItemBuildingGadget.getAction(stack, BuildingOption.FILL);
-        List<BlockPos> blocks = getFloorBlocks(from, to, fillMode == BuildingAction.FULL);
-        VoxelRenderer.renderBlocks(blocks, player, partialTicks);
-
-        updateHighlight(from, to, blocks.size());
+        return new ConstructionSet(getFloorBlocks(from, to, fillMode == BuildingAction.FULL), from, to);
     }
 
     public static BlockPos findFloor(EntityPlayer player, BlockPos firstPos, boolean skipRaytrace) {
@@ -109,4 +96,5 @@ public class Floor extends TwoClicksBuildMode {
             return BuildModes.isCriteriaValid(start, look, reach, player, skipRaytrace, planeBound, planeBound, distToPlayerSq);
         }
     }
+    
 }

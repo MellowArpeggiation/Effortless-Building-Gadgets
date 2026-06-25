@@ -5,54 +5,32 @@ import java.util.List;
 
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.blocks.BlockPos.Dimension;
-import net.mellow.effortless.blocks.PlaceableStack;
+import net.mellow.effortless.blocks.ConstructionSet;
 import net.mellow.effortless.buildmode.ModeOptions.BuildingAction;
 import net.mellow.effortless.buildmode.ModeOptions.BuildingOption;
 import net.mellow.effortless.buildmode.TwoClicksBuildMode;
-import net.mellow.effortless.buildmode.VoxelRenderer;
 import net.mellow.effortless.items.ItemBuildingGadget;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 
 public class Circle extends TwoClicksBuildMode {
-
+    
+    // TODO: highlight text fix!!
     @Override
-    public int add(ItemStack stack, PlaceableStack selected, World world, EntityPlayer player, BlockPos from) {
+    public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, BlockPos from) {
         BuildingAction tilt = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_TILT);
 
         BlockPos to = tilt == BuildingAction.CIRCLE_VERTICAL
             ? Floor.findFloor(player, from, true)
             : Wall.findWall(player, from, true);
-        if (to == null) return 0;
+        if (to == null) return null;
 
         BuildingAction start = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_START);
         BuildingAction fill = ItemBuildingGadget.getAction(stack, BuildingOption.FILL);
 
-        return build(world, player, selected, getCircleBlocks(from, to, start == BuildingAction.CIRCLE_START_CORNER, fill == BuildingAction.FULL), false);
-    }
-
-    @Override
-    public void render(ItemStack stack, World world, EntityPlayer player, BlockPos from, float partialTicks) {
-        BuildingAction tilt = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_TILT);
-
-        BlockPos to = tilt == BuildingAction.CIRCLE_VERTICAL
-            ? Floor.findFloor(player, from, true)
-            : Wall.findWall(player, from, true);
-        if (to == null) return;
-
-        BuildingAction start = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_START);
-        BuildingAction fill = ItemBuildingGadget.getAction(stack, BuildingOption.FILL);
-
-        List<BlockPos> blocks = getCircleBlocks(from, to, start == BuildingAction.CIRCLE_START_CORNER, fill == BuildingAction.FULL);
-        VoxelRenderer.renderBlocks(blocks, player, partialTicks);
-        
-        if (start == BuildingAction.CIRCLE_START_CORNER) {
-            updateHighlight(BlockPos.min(from, to), BlockPos.max(from, to), blocks.size());
-        } else {
-            updateHighlightCentered(BlockPos.min(from, to), BlockPos.max(from, to), blocks.size());
-        }
+        return new ConstructionSet(getCircleBlocks(from, to, start == BuildingAction.CIRCLE_START_CORNER, fill == BuildingAction.FULL), from, to);
     }
 
     public static List<BlockPos> getCircleBlocks(BlockPos from, BlockPos to, boolean fromCorner, boolean fill) {
@@ -161,19 +139,6 @@ public class Circle extends TwoClicksBuildMode {
         double part1 = radiusX * radiusX * Math.sin(theta) * Math.sin(theta);
         double part2 = radiusZ * radiusZ * Math.cos(theta) * Math.cos(theta);
         return radiusX * radiusZ / Math.sqrt(part1 + part2);
-    }
-
-    public static void updateHighlightCentered(BlockPos from, BlockPos to, int count) {
-        BlockPos min = BlockPos.min(from, to);
-        BlockPos max = BlockPos.max(from, to);
-
-        List<String> values = new ArrayList<>();
-        if (min.x != max.x) values.add("" + ((max.x - min.x + 1) * 2 - 1));
-        if (min.y != max.y) values.add("" + (max.y - min.y + 1));
-        if (min.z != max.z) values.add("" + ((max.z - min.z + 1) * 2 - 1));
-
-        highlightTitle = count + " (" + (!values.isEmpty() ? String.join("x", values) : "1") + ")";
-        Minecraft.getMinecraft().ingameGUI.remainingHighlightTicks = 40;
     }
     
 }
