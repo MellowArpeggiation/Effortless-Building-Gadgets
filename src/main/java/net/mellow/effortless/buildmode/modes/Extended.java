@@ -18,7 +18,9 @@ public class Extended extends BaseBuildMode {
 
     @Override
     public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
-        return new ConstructionSet(BlockPos.fromRaycastReplaceable(world, mop));
+        BlockPos pos = BlockPos.fromRaycastReplaceable(world, mop);
+        if (pos == null) return null;
+        return new ConstructionSet(pos);
     }
 
     @Override

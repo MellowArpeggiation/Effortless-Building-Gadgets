@@ -23,10 +23,15 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
         if (pos0 != null) {
             pos1 = getMid(stack, world, player, pos0);
             if (pos1 == null) return false;
+
             stack.stackTagCompound.setTag("pos1", pos1.save());
+
+            return false;
         }
         
-        stack.stackTagCompound.setTag("pos0", BlockPos.fromRaycastReplaceable(world, mop).save());
+        pos0 = BlockPos.fromRaycastReplaceable(world, mop);
+        if (pos0 == null) return false;
+        stack.stackTagCompound.setTag("pos0", pos0.save());
 
         return false;
     }

@@ -17,7 +17,9 @@ public abstract class TwoClicksBuildMode extends BaseBuildMode {
         BlockPos from = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
         if (from != null) return true;
 
-        stack.stackTagCompound.setTag("pos0", BlockPos.fromRaycastReplaceable(world, mop).save());
+        from = BlockPos.fromRaycastReplaceable(world, mop);
+        if (from == null) return false;
+        stack.stackTagCompound.setTag("pos0", from.save());
 
         return false;
     }

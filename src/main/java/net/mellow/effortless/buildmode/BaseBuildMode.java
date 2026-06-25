@@ -31,6 +31,7 @@ public abstract class BaseBuildMode {
         if (isPlacing(stack)) return; // only on first click
 
         BlockPos from = BlockPos.fromRaycastReplaceable(world, mop);
+        if (from == null) return;
         PlaceableStack place = PlaceableStack.getPlaceableStack(selected, world, player, from.x, from.y, from.z, mop.sideHit, new Vec3(mop.hitVec));
 
         stack.stackTagCompound.setTag("place", place.save());
