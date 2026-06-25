@@ -61,7 +61,10 @@ public class CommonEvents {
                     event.useBlock = Result.DENY;
                     event.useItem = Result.DENY;
 
-                    if (!event.world.isRemote) event.setCanceled(true);
+                    if (!event.world.isRemote) {
+                        lastServerAction.put(event.entityPlayer, event.action);
+                        event.setCanceled(true);
+                    }
 
                     return;
                 }
