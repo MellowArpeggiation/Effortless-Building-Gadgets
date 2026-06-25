@@ -54,10 +54,23 @@ public class CommonEvents {
     // Intercept ItemBlock usage for creative mode + baubles
     @SubscribeEvent
     public void onPlayerInteract(PlayerInteractEvent event) {
+        ItemStack held = event.entityPlayer.getHeldItem();
+        if (event.action == Action.LEFT_CLICK_BLOCK) {
+            if (held != null && held.getItem() instanceof ItemBuildingGadget g) {
+                if (g.onItemLeftClick(event.entityPlayer, held)) {
+                    event.useBlock = Result.DENY;
+                    event.useItem = Result.DENY;
+
+                    if (!event.world.isRemote) event.setCanceled(true);
+
+                    return;
+                }
+            }
+        }
+
         ItemStack gadget = CompatBaublesExpanded.getGadgetFromBaubles(event.entityPlayer);
         if (gadget == null) return;
         
-        ItemStack held = event.entityPlayer.getHeldItem();
         if (!PlaceableStack.isPlaceable(held)) return;
 
         BuildingMode mode = ItemBuildingGadget.getMode(gadget);
@@ -67,7 +80,7 @@ public class CommonEvents {
 
         if (event.action == Action.LEFT_CLICK_BLOCK) {
             // This occurs first, and if it clears, then don't attempt to do the funky player tick canceling below
-            if (gadgetItem.onEntitySwing(event.entityLiving, gadget)) {
+            if (gadgetItem.onItemLeftClick(event.entityPlayer, gadget)) {
 
                 event.useBlock = Result.DENY;
                 event.useItem = Result.DENY;
@@ -137,16 +150,21 @@ public class CommonEvents {
 
         // Ignore any handled events
         if (lastServerAction.get(event.player) != null) return;
+        
+        ItemStack held = event.player.getHeldItem();
+        if (held != null && held.getItem() instanceof ItemBuildingGadget g) {
+            g.onItemLeftClick(event.player, held);
+        }
 
         ItemStack gadget = CompatBaublesExpanded.getGadgetFromBaubles(event.player);
         if (gadget == null) return;
-        
-        ItemStack held = event.player.getHeldItem();
+
         if (!PlaceableStack.isPlaceable(held)) return;
 
         if (ItemBuildingGadget.getMode(gadget).handler == null) return;
+        ItemBuildingGadget gadgetItem = (ItemBuildingGadget) gadget.getItem();
 
-        gadget.getItem().onEntitySwing(event.player, gadget);
+        gadgetItem.onItemLeftClick(event.player, gadget);
 
         CompatBaublesExpanded.syncBaubles(event.player);
     }

@@ -131,8 +131,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         return stack;
     }
 
-    @Override
-    public boolean onEntitySwing(EntityLivingBase entityLiving, ItemStack stack) {
+    public boolean onItemLeftClick(EntityPlayer player, ItemStack stack) {
         BuildingMode mode = getMode(stack);
         if (mode.handler == null) return false;
 
