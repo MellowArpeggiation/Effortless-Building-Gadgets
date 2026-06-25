@@ -41,7 +41,13 @@ public abstract class BaseBuildMode {
         return PlaceableStack.load(stack.stackTagCompound.getCompoundTag("place"));
     }
 
-    public abstract void render(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, float partialTicks);
+    public boolean shouldRender(ItemStack stack) {
+        return true;
+    }
+
+    public boolean showHighlight(ItemStack stack) {
+        return true;
+    }
 
     public int reach(ItemStack stack) {
         return 32;

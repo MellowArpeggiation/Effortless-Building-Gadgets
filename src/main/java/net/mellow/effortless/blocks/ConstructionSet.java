@@ -106,12 +106,12 @@ public class ConstructionSet {
     }
 
     public void render(EntityPlayer player, float partialTicks) {
-        render(player, partialTicks, false);
+        render(player, partialTicks, true);
     }
 
-    public void render(EntityPlayer player, float partialTicks, boolean skipHighlight) {
+    public void render(EntityPlayer player, float partialTicks, boolean showHighlight) {
         VoxelRenderer.renderBlocks(positions, player, Operation.PLACE, partialTicks);
-        if (!skipHighlight) updateHighlight(from, to, positions.size());
+        if (showHighlight) updateHighlight(from, to, positions.size());
     }
 
     private static void updateHighlight(BlockPos from, BlockPos to, int count) {

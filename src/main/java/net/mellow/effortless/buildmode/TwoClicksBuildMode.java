@@ -2,7 +2,6 @@ package net.mellow.effortless.buildmode;
 
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.blocks.ConstructionSet;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
@@ -30,18 +29,6 @@ public abstract class TwoClicksBuildMode extends BaseBuildMode {
         if (from == null) return null;
 
         return getBlocks(stack, world, player, mop, from);
-    }
-
-    @Override
-    public void render(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, float partialTicks) {
-        BlockPos from = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
-
-        if (from == null) {
-            Minecraft.getMinecraft().renderGlobal.drawSelectionBox(player, mop, 0, partialTicks);
-        } else {
-            ConstructionSet set = getBlocks(stack, world, player, mop, from);
-            if (set != null) set.render(player, partialTicks);
-        }
     }
 
     @Override

@@ -64,22 +64,12 @@ public class Air extends BaseBuildMode {
     }
 
     @Override
-    public void render(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, float partialTicks) {
-        if (mop.typeOfHit == MovingObjectType.MISS) {
-            ConstructionSet set = new ConstructionSet(new BlockPos(mop.blockX, mop.blockY, mop.blockZ));
-            set.render(player, partialTicks, true);
-        } else {
-            ConstructionSet set = new ConstructionSet(BlockPos.fromRaycastSide(mop));
-            set.render(player, partialTicks, true);
-        }
-    }
-
-    @Override
     public int reach(ItemStack stack) {
         return 6;
     }
 
     @Override public boolean clear(ItemStack stack) { return false; }
     @Override public boolean isPlacing(ItemStack stack) { return false; }
+    @Override public boolean showHighlight(ItemStack stack) { return false; }
     
 }

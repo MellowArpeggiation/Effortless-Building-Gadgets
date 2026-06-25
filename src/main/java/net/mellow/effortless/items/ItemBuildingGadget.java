@@ -31,6 +31,7 @@ import net.mellow.effortless.compat.CompatBaublesExpanded;
 import net.mellow.effortless.gui.GuiBuildingGadget;
 import net.mellow.effortless.network.IItemControlReceiver;
 import net.mellow.effortless.util.MathUtil;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
@@ -224,6 +225,21 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         }
     }
 
+    private ConstructionSet lastRendered;
+    private long lastTick;
+
+    private ConstructionSet getCachedSet(World world, EntityPlayer player, ItemStack stack, MovingObjectPosition mop, BuildingMode mode) {
+        if (!mode.handler.shouldRender(stack)) return null;
+
+        if (world.getTotalWorldTime() == lastTick) {
+            return lastRendered;
+        }
+
+        lastRendered = mode.handler.getBlocks(stack, world, player, mop);
+        lastTick = world.getTotalWorldTime();
+
+        return lastRendered;
+    }
 
     @Override
     public void render(World world, EntityPlayer player, ItemStack stack, float partialTicks) {
@@ -234,8 +250,13 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
 
         MovingObjectPosition mop = BuildModes.getMop(player, mode.handler.reach(stack));
         if (mop == null) return; // only occurs for NaN
-        
-        mode.handler.render(stack, world, player, mop, partialTicks);
+
+        ConstructionSet set = getCachedSet(world, player, stack, mop, mode);
+        if (set == null) {
+            Minecraft.getMinecraft().renderGlobal.drawSelectionBox(player, mop, 0, partialTicks);
+        } else {
+            set.render(player, partialTicks, mode.handler.showHighlight(stack));
+        }
     }
 
     @Override

@@ -10,7 +10,6 @@ import net.mellow.effortless.buildmode.BaseBuildMode;
 import net.mellow.effortless.buildmode.ModeOptions.BuildingAction;
 import net.mellow.effortless.buildmode.ModeOptions.BuildingOption;
 import net.mellow.effortless.items.ItemBuildingGadget;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
@@ -89,18 +88,6 @@ public class DiagonalLine extends BaseBuildMode {
         BlockPos pos2 = BlockPos.fromRaycastReplaceable(world, mop);
         if (pos2 == null) return null;
         return new ConstructionSet(DiagonalLine.getDiagonalLineBlocks(pos0, pos2, 10), pos0, pos2);
-    }
-
-    @Override
-    public void render(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, float partialTicks) {
-        BlockPos pos0 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
-
-        if (pos0 == null) {
-            Minecraft.getMinecraft().renderGlobal.drawSelectionBox(player, mop, 0, partialTicks);
-        } else {
-            ConstructionSet set = getBlocks(stack, world, player, mop);
-            if (set != null) set.render(player, partialTicks);
-        }
     }
 
     @Override
