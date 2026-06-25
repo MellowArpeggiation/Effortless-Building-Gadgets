@@ -1,7 +1,9 @@
 package net.mellow.effortless.buildmode.modes;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.blocks.BlockPos.Dimension;
@@ -25,7 +27,7 @@ public class Floor extends TwoClicksBuildMode {
         if (to == null) return null;
 
         BuildingAction fillMode = ItemBuildingGadget.getAction(stack, BuildingOption.FILL);
-        return new ConstructionSet(getFloorBlocks(from, to, fillMode == BuildingAction.FULL), from, to);
+        return new ConstructionSet(getFloorBlocks(from, to, fillMode == BuildingAction.FULL));
     }
 
     public static BlockPos findFloor(EntityPlayer player, BlockPos firstPos, boolean skipRaytrace) {
@@ -52,29 +54,29 @@ public class Floor extends TwoClicksBuildMode {
         return getFinalPos(player, firstPos, selected.planeBound, Dimension.Y);
     }
 
-    public static List<BlockPos> getFloorBlocks(BlockPos from, BlockPos to, boolean fill) {
+    public static Set<BlockPos> getFloorBlocks(BlockPos from, BlockPos to, boolean fill) {
         BlockPos min = BlockPos.min(from, to);
         BlockPos max = BlockPos.max(from, to);
 
-        List<BlockPos> list = new ArrayList<>();
+        Set<BlockPos> set = new HashSet<>();
 
         if (fill) {
-            addFloorBlocks(list, min.x, max.x, min.y, min.z, max.z);
+            addFloorBlocks(set, min.x, max.x, min.y, min.z, max.z);
         } else {
-            addHollowFloorBlocks(list, min.x, max.x, min.y, min.z, max.z);
+            addHollowFloorBlocks(set, min.x, max.x, min.y, min.z, max.z);
         }
 
-        return list;
+        return set;
     }
 
-    public static void addFloorBlocks(List<BlockPos> list, int x1, int x2, int y, int z1, int z2) {
+    public static void addFloorBlocks(Set<BlockPos> list, int x1, int x2, int y, int z1, int z2) {
         for (int x = x1; x <= x2; x++) {
         for (int z = z1; z <= z2; z++)
             list.add(new BlockPos(x, y, z));
         }
     }
 
-    public static void addHollowFloorBlocks(List<BlockPos> list, int x1, int x2, int y, int z1, int z2) {
+    public static void addHollowFloorBlocks(Set<BlockPos> list, int x1, int x2, int y, int z1, int z2) {
         Line.addXLineBlocks(list, x1, x2, y, z1);
         Line.addXLineBlocks(list, x1, x2, y, z2);
         Line.addZLineBlocks(list, z1, z2, x1, y);

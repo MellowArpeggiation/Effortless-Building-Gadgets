@@ -1,7 +1,7 @@
 package net.mellow.effortless.buildmode.modes;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.blocks.ConstructionSet;
@@ -28,8 +28,7 @@ public class Sphere extends ThreeClicksBuildMode {
 
         BuildingAction start = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_START);
         BuildingAction fill = ItemBuildingGadget.getAction(stack, BuildingOption.FILL);
-        List<BlockPos> blocks = Circle.getCircleBlocks(pos0, pos1, start == BuildingAction.CIRCLE_START_CORNER, fill == BuildingAction.FULL);
-        return new ConstructionSet(blocks, pos0, pos1);
+        return new ConstructionSet(Circle.getCircleBlocks(pos0, pos1, start == BuildingAction.CIRCLE_START_CORNER, fill == BuildingAction.FULL));
     }
 
     @Override
@@ -39,12 +38,11 @@ public class Sphere extends ThreeClicksBuildMode {
 
         BuildingAction start = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_START);
         BuildingAction fill = ItemBuildingGadget.getAction(stack, BuildingOption.FILL);
-        List<BlockPos> blocks = getSphereBlocks(pos0, pos1, pos2, start == BuildingAction.CIRCLE_START_CORNER, fill == BuildingAction.FULL);
-        return new ConstructionSet(blocks, pos0, pos2);
+        return new ConstructionSet(getSphereBlocks(pos0, pos1, pos2, start == BuildingAction.CIRCLE_START_CORNER, fill == BuildingAction.FULL));
     }
 
-    public static List<BlockPos> getSphereBlocks(BlockPos from, BlockPos mid, BlockPos to, boolean fromCorner, boolean fill) {
-        List<BlockPos> list = new ArrayList<>();
+    public static Set<BlockPos> getSphereBlocks(BlockPos from, BlockPos mid, BlockPos to, boolean fromCorner, boolean fill) {
+        Set<BlockPos> set = new HashSet<>();
 
         double centerX = from.x;
         double centerY = from.y;
@@ -66,15 +64,15 @@ public class Sphere extends ThreeClicksBuildMode {
         double radiusZ = Math.abs(mid.z - centerZ);
 
         if (fill) {
-            addSphereBlocks(list, from.x, from.y, from.z, to.x, to.y, to.z, centerX, centerY, centerZ, radiusX, radiusY, radiusZ);
+            addSphereBlocks(set, from.x, from.y, from.z, to.x, to.y, to.z, centerX, centerY, centerZ, radiusX, radiusY, radiusZ);
         } else {
-            addHollowSphereBlocks(list, from.x, from.y, from.z, to.x, to.y, to.z, centerX, centerY, centerZ, radiusX, radiusY, radiusZ);
+            addHollowSphereBlocks(set, from.x, from.y, from.z, to.x, to.y, to.z, centerX, centerY, centerZ, radiusX, radiusY, radiusZ);
         }
 
-        return list;
+        return set;
     }
 
-    public static void addSphereBlocks(List<BlockPos> list, int x1, int y1, int z1, int x2, int y2, int z2,
+    public static void addSphereBlocks(Set<BlockPos> list, int x1, int y1, int z1, int x2, int y2, int z2,
                                        double centerX, double centerY, double centerZ, double radiusX, double radiusY, double radiusZ) {
         for (int l = x1; x1 < x2 ? l <= x2 : l >= x2; l += x1 < x2 ? 1 : -1) {
             for (int n = z1; z1 < z2 ? n <= z2 : n >= z2; n += z1 < z2 ? 1 : -1) {
@@ -88,7 +86,7 @@ public class Sphere extends ThreeClicksBuildMode {
         }
     }
 
-    public static void addHollowSphereBlocks(List<BlockPos> list, int x1, int y1, int z1, int x2, int y2, int z2,
+    public static void addHollowSphereBlocks(Set<BlockPos> list, int x1, int y1, int z1, int x2, int y2, int z2,
                                              double centerX, double centerY, double centerZ, double radiusX, double radiusY, double radiusZ) {
         for (int l = x1; x1 < x2 ? l <= x2 : l >= x2; l += x1 < x2 ? 1 : -1) {
             for (int n = z1; z1 < z2 ? n <= z2 : n >= z2; n += z1 < z2 ? 1 : -1) {

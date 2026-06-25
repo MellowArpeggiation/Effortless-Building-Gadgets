@@ -1,7 +1,7 @@
 package net.mellow.effortless.buildmode.modes;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.blocks.ConstructionSet;
@@ -26,7 +26,7 @@ public class DiagonalWall extends ThreeClicksBuildMode {
         BlockPos pos1 = getMid(stack, world, player, pos0);
         if (pos1 == null) return null;
 
-        return new ConstructionSet(DiagonalLine.getDiagonalLineBlocks(pos0, pos1, 1), pos0, pos1);
+        return new ConstructionSet(DiagonalLine.getDiagonalLineBlocks(pos0, pos1, 1));
     }
 
     @Override
@@ -35,43 +35,41 @@ public class DiagonalWall extends ThreeClicksBuildMode {
         if (pos2 == null) return null;
 
         BuildingAction fillMode = ItemBuildingGadget.getAction(stack, BuildingOption.FILL);
-        List<BlockPos> blocks = getDiagonalWallBlocks(pos0, pos1, pos2, fillMode == BuildingAction.FULL);
-
-        return new ConstructionSet(blocks, pos0, pos2);
+        return new ConstructionSet(getDiagonalWallBlocks(pos0, pos1, pos2, fillMode == BuildingAction.FULL));
     }
 
     //Add diagonal wall from first to second
-    public static List<BlockPos> getDiagonalWallBlocks(BlockPos from, BlockPos mid, BlockPos to, boolean fill) {
-        List<BlockPos> list = new ArrayList<>();
+    public static Set<BlockPos> getDiagonalWallBlocks(BlockPos from, BlockPos mid, BlockPos to, boolean fill) {
+        Set<BlockPos> set = new HashSet<>();
 
         //Get diagonal line blocks
-        List<BlockPos> diagonalLineBlocks = DiagonalLine.getDiagonalLineBlocks(from, mid, 1);
+        Set<BlockPos> diagonalLineBlocks = DiagonalLine.getDiagonalLineBlocks(from, mid, 1);
 
         int lowest = Math.min(from.y, to.y);
         int highest = Math.max(from.y, to.y);
 
         if (fill) {
             //Copy diagonal line on y axis
-            for (int y = lowest; y <= highest; y++) {
-                for (BlockPos blockPos : diagonalLineBlocks) {
-                    list.add(new BlockPos(blockPos.x, y, blockPos.z));
+            for (BlockPos blockPos : diagonalLineBlocks) {
+                for (int y = lowest; y <= highest; y++) {
+                    set.add(new BlockPos(blockPos.x, y, blockPos.z));
                 }
             }
         } else {
             // Place bottom and top
             for (BlockPos blockPos : diagonalLineBlocks) {
-                list.add(new BlockPos(blockPos.x, lowest, blockPos.z));
-                list.add(new BlockPos(blockPos.x, highest, blockPos.z));
+                set.add(new BlockPos(blockPos.x, lowest, blockPos.z));
+                set.add(new BlockPos(blockPos.x, highest, blockPos.z));
             }
 
             // Place caps
             for (int y = lowest; y <= highest; y++) {
-                list.add(new BlockPos(from.x, y, from.z));
-                list.add(new BlockPos(to.x, y, to.z));
+                set.add(new BlockPos(from.x, y, from.z));
+                set.add(new BlockPos(to.x, y, to.z));
             }
         }
 
-        return list;
+        return set;
     }
     
 }

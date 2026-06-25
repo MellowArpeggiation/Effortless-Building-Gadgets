@@ -1,7 +1,7 @@
 package net.mellow.effortless.buildmode.modes;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.blocks.ConstructionSet;
@@ -26,7 +26,7 @@ public class SlopeFloor extends ThreeClicksBuildMode {
         BlockPos pos1 = getMid(stack, world, player, pos0);
         if (pos1 == null) return null;
 
-        return new ConstructionSet(Floor.getFloorBlocks(pos0, pos1, true), pos0, pos1);
+        return new ConstructionSet(Floor.getFloorBlocks(pos0, pos1, true));
     }
 
     @Override
@@ -35,14 +35,12 @@ public class SlopeFloor extends ThreeClicksBuildMode {
         if (pos2 == null) return null;
 
         BuildingAction edge = ItemBuildingGadget.getAction(stack, BuildingOption.RAISED_EDGE);
-        List<BlockPos> blocks = getSlopeFloorBlocks(pos0, pos1, pos2, edge == BuildingAction.SHORT_EDGE);
-
-        return new ConstructionSet(blocks, pos0, pos2);
+        return new ConstructionSet(getSlopeFloorBlocks(pos0, pos1, pos2, edge == BuildingAction.SHORT_EDGE));
     }
 
     //Add slope floor from first to second
-    public static List<BlockPos> getSlopeFloorBlocks(BlockPos from, BlockPos mid, BlockPos to, boolean shortEdge) {
-        List<BlockPos> list = new ArrayList<>();
+    public static Set<BlockPos> getSlopeFloorBlocks(BlockPos from, BlockPos mid, BlockPos to, boolean shortEdge) {
+        Set<BlockPos> set = new HashSet<>();
 
         //Determine whether to use x or z axis to slope up
         boolean onXAxis = true;
@@ -62,16 +60,16 @@ public class SlopeFloor extends ThreeClicksBuildMode {
             //Along X goes up
 
             //Get diagonal line blocks
-            List<BlockPos> diagonalLineBlocks = DiagonalLine.getDiagonalLineBlocks(from, new BlockPos(mid.x, to.y, from.z), 1);
+            Set<BlockPos> diagonalLineBlocks = DiagonalLine.getDiagonalLineBlocks(from, new BlockPos(mid.x, to.y, from.z), 1);
 
             //Limit amount of blocks we can place
             int lowest = Math.min(from.z, mid.z);
             int highest = Math.max(from.z, mid.z);
 
             //Copy diagonal line on x axis
-            for (int z = lowest; z <= highest; z++) {
-                for (BlockPos blockPos : diagonalLineBlocks) {
-                    list.add(new BlockPos(blockPos.x, blockPos.y, z));
+            for (BlockPos blockPos : diagonalLineBlocks) {
+                for (int z = lowest; z <= highest; z++) {
+                    set.add(new BlockPos(blockPos.x, blockPos.y, z));
                 }
             }
 
@@ -79,21 +77,21 @@ public class SlopeFloor extends ThreeClicksBuildMode {
             //Along Z goes up
 
             //Get diagonal line blocks
-            List<BlockPos> diagonalLineBlocks = DiagonalLine.getDiagonalLineBlocks(from, new BlockPos(from.x, to.y, mid.z), 1f);
+            Set<BlockPos> diagonalLineBlocks = DiagonalLine.getDiagonalLineBlocks(from, new BlockPos(from.x, to.y, mid.z), 1f);
 
             //Limit amount of blocks we can place
             int lowest = Math.min(from.x, mid.x);
             int highest = Math.max(from.x, mid.x);
 
             //Copy diagonal line on x axis
-            for (int x = lowest; x <= highest; x++) {
-                for (BlockPos blockPos : diagonalLineBlocks) {
-                    list.add(new BlockPos(x, blockPos.y, blockPos.z));
+            for (BlockPos blockPos : diagonalLineBlocks) {
+                for (int x = lowest; x <= highest; x++) {
+                    set.add(new BlockPos(x, blockPos.y, blockPos.z));
                 }
             }
         }
 
-        return list;
+        return set;
     }
     
 }

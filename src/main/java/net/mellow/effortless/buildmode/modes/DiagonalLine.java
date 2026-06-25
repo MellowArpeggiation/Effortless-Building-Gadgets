@@ -1,7 +1,7 @@
 package net.mellow.effortless.buildmode.modes;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.blocks.ConstructionSet;
@@ -72,13 +72,13 @@ public class DiagonalLine extends BaseBuildMode {
             pos1 = Floor.findFloor(player, pos0, true);
             if (pos1 == null) return null;
 
-            return new ConstructionSet(DiagonalLine.getDiagonalLineBlocks(pos0, pos1, 10), pos0, pos1);
+            return new ConstructionSet(DiagonalLine.getDiagonalLineBlocks(pos0, pos1, 10));
         }
 
         BlockPos pos2 = Cube.findHeight(player, pos0, pos1, true);
         if (pos2 == null) return null;
 
-        return new ConstructionSet(DiagonalLine.getDiagonalLineBlocks(pos0, pos2, 10), pos0, pos2);
+        return new ConstructionSet(DiagonalLine.getDiagonalLineBlocks(pos0, pos2, 10));
     }
 
     private ConstructionSet getBlocksPointToPoint(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
@@ -87,7 +87,7 @@ public class DiagonalLine extends BaseBuildMode {
 
         BlockPos pos2 = BlockPos.fromRaycastReplaceable(world, mop);
         if (pos2 == null) return null;
-        return new ConstructionSet(DiagonalLine.getDiagonalLineBlocks(pos0, pos2, 10), pos0, pos2);
+        return new ConstructionSet(DiagonalLine.getDiagonalLineBlocks(pos0, pos2, 10));
     }
 
     @Override
@@ -104,8 +104,8 @@ public class DiagonalLine extends BaseBuildMode {
     }
 
     //Add diagonal line from first to second
-    public static List<BlockPos> getDiagonalLineBlocks(BlockPos from, BlockPos to, float sampleMultiplier) {
-        List<BlockPos> list = new ArrayList<>();
+    public static Set<BlockPos> getDiagonalLineBlocks(BlockPos from, BlockPos to, float sampleMultiplier) {
+        Set<BlockPos> set = new HashSet<>();
 
         Vec3 first = Vec3.atCenterOf(from);
         Vec3 second = Vec3.atCenterOf(to);
@@ -113,13 +113,10 @@ public class DiagonalLine extends BaseBuildMode {
         int iterations = (int) Math.ceil(first.distanceTo(second) * sampleMultiplier);
         for (double t = 0; t <= 1.0; t += 1.0 / iterations) {
             Vec3 lerp = first.add(second.subtract(first).scale(t));
-            BlockPos candidate = BlockPos.containing(lerp);
-            //Only add if not equal to the last in the list
-            if (list.isEmpty() || !list.get(list.size() - 1).equals(candidate))
-                list.add(candidate);
+            set.add(BlockPos.containing(lerp));
         }
 
-        return list;
+        return set;
     }
     
 }

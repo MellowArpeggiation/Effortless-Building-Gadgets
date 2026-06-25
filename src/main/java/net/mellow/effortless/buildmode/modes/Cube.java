@@ -1,7 +1,9 @@
 package net.mellow.effortless.buildmode.modes;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.blocks.BlockPos.Dimension;
@@ -30,7 +32,7 @@ public class Cube extends ThreeClicksBuildMode {
         if (pos1 == null) return null;
 
         BuildingAction fillMode = ItemBuildingGadget.getAction(stack, BuildingOption.CUBE_FILL);
-        return new ConstructionSet(getFloorBlocksUsingCubeFill(pos0, pos1, fillMode), pos0, pos1);
+        return new ConstructionSet(getFloorBlocksUsingCubeFill(pos0, pos1, fillMode));
     }
 
     @Override
@@ -39,7 +41,7 @@ public class Cube extends ThreeClicksBuildMode {
         if (pos2 == null) return null;
 
         BuildingAction fillMode = ItemBuildingGadget.getAction(stack, BuildingOption.CUBE_FILL);
-        return new ConstructionSet(getCubeBlocks(pos0, pos2, fillMode), pos0, pos2);
+        return new ConstructionSet(getCubeBlocks(pos0, pos2, fillMode));
     }
 
     public static BlockPos findHeight(EntityPlayer player, BlockPos firstPos, BlockPos secondPos, boolean skipRaytrace) {
@@ -101,44 +103,44 @@ public class Cube extends ThreeClicksBuildMode {
         return getFinalPos(player, firstPos, selected.lineBound, dimension != Dimension.X, dimension != Dimension.Y, dimension != Dimension.Z);
     }
 
-    public static List<BlockPos> getFloorBlocksUsingCubeFill(BlockPos from, BlockPos to, BuildingAction fill) {
+    public static Set<BlockPos> getFloorBlocksUsingCubeFill(BlockPos from, BlockPos to, BuildingAction fill) {
         BlockPos min = BlockPos.min(from, to);
         BlockPos max = BlockPos.max(from, to);
 
-        List<BlockPos> list = new ArrayList<>();
+        Set<BlockPos> set = new HashSet<>();
 
         if (fill == BuildingAction.CUBE_SKELETON) {
-            Floor.addHollowFloorBlocks(list, min.x, max.x, min.y, min.z, max.z);
+            Floor.addHollowFloorBlocks(set, min.x, max.x, min.y, min.z, max.z);
         } else {
-            Floor.addFloorBlocks(list, min.x, max.x, min.y, min.z, max.z);
+            Floor.addFloorBlocks(set, min.x, max.x, min.y, min.z, max.z);
         }
 
-        return list;
+        return set;
     }
 
-    public static List<BlockPos> getCubeBlocks(BlockPos from, BlockPos to, BuildingAction fill) {
+    public static Set<BlockPos> getCubeBlocks(BlockPos from, BlockPos to, BuildingAction fill) {
         BlockPos min = BlockPos.min(from, to);
         BlockPos max = BlockPos.max(from, to);
 
-        List<BlockPos> list = new ArrayList<>();
+        Set<BlockPos> set = new HashSet<>();
 
         switch (fill) {
             case CUBE_FULL:
-                addCubeBlocks(list, min.x, max.x, min.y, max.y, min.z, max.z);
+                addCubeBlocks(set, min.x, max.x, min.y, max.y, min.z, max.z);
                 break;
             case CUBE_HOLLOW:
-                addHollowCubeBlocks(list, min.x, max.x, min.y, max.y, min.z, max.z);
+                addHollowCubeBlocks(set, min.x, max.x, min.y, max.y, min.z, max.z);
                 break;
             case CUBE_SKELETON:
-                addSkeletonCubeBlocks(list, min.x, max.x, min.y, max.y, min.z, max.z);
+                addSkeletonCubeBlocks(set, min.x, max.x, min.y, max.y, min.z, max.z);
                 break;
             default: break;
         }
 
-        return list;
+        return set;
     }
 
-    public static void addCubeBlocks(List<BlockPos> list, int x1, int x2, int y1, int y2, int z1, int z2) {
+    public static void addCubeBlocks(Set<BlockPos> list, int x1, int x2, int y1, int y2, int z1, int z2) {
         for (int x = x1; x <= x2; x++)
         for (int y = y1; y <= y2; y++)
         for (int z = z1; z <= z2; z++) {
@@ -146,7 +148,7 @@ public class Cube extends ThreeClicksBuildMode {
         }
     }
 
-    public static void addHollowCubeBlocks(List<BlockPos> list, int x1, int x2, int y1, int y2, int z1, int z2) {
+    public static void addHollowCubeBlocks(Set<BlockPos> list, int x1, int x2, int y1, int y2, int z1, int z2) {
         Wall.addXWallBlocks(list, x1, y1, y2, z1, z2);
         Wall.addXWallBlocks(list, x2, y1, y2, z1, z2);
 
@@ -157,7 +159,7 @@ public class Cube extends ThreeClicksBuildMode {
         Floor.addFloorBlocks(list, x1, x2, y2, z1, z2);
     }
 
-    public static void addSkeletonCubeBlocks(List<BlockPos> list, int x1, int x2, int y1, int y2, int z1, int z2) {
+    public static void addSkeletonCubeBlocks(Set<BlockPos> list, int x1, int x2, int y1, int y2, int z1, int z2) {
         Line.addXLineBlocks(list, x1, x2, y1, z1);
         Line.addXLineBlocks(list, x1, x2, y1, z2);
         Line.addXLineBlocks(list, x1, x2, y2, z1);

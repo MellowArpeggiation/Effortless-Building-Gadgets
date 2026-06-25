@@ -1,7 +1,9 @@
 package net.mellow.effortless.buildmode.modes;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.blocks.BlockPos.Dimension;
@@ -25,7 +27,7 @@ public class Wall extends TwoClicksBuildMode {
         if (to == null) return null;
 
         BuildingAction fillMode = ItemBuildingGadget.getAction(stack, BuildingOption.FILL);
-        return new ConstructionSet(getWallBlocks(from, to, fillMode == BuildingAction.FULL), from, to);
+        return new ConstructionSet(getWallBlocks(from, to, fillMode == BuildingAction.FULL));
     }
 
     public static BlockPos findWall(EntityPlayer player, BlockPos firstPos, boolean skipRaytrace) {
@@ -67,51 +69,51 @@ public class Wall extends TwoClicksBuildMode {
         return getFinalPos(player, firstPos, selected.planeBound, selected.extendsIn);
     }
 
-    public static List<BlockPos> getWallBlocks(BlockPos from, BlockPos to, boolean fill) {
+    public static Set<BlockPos> getWallBlocks(BlockPos from, BlockPos to, boolean fill) {
         BlockPos min = BlockPos.min(from, to);
         BlockPos max = BlockPos.max(from, to);
 
-        List<BlockPos> list = new ArrayList<>();
+        Set<BlockPos> set = new HashSet<>();
 
         if (min.x == max.x) {
             if (fill) {
-                addXWallBlocks(list, min.x, min.y, max.y, min.z, max.z);
+                addXWallBlocks(set, min.x, min.y, max.y, min.z, max.z);
             } else {
-                addXHollowWallBlocks(list, min.x, min.y, max.y, min.z, max.z);
+                addXHollowWallBlocks(set, min.x, min.y, max.y, min.z, max.z);
             }
         } else {
             if (fill) {
-                addZWallBlocks(list, min.x, max.x, min.y, max.y, min.z);
+                addZWallBlocks(set, min.x, max.x, min.y, max.y, min.z);
             } else {
-                addZHollowWallBlocks(list, min.x, max.x, min.y, max.y, min.z);
+                addZHollowWallBlocks(set, min.x, max.x, min.y, max.y, min.z);
             }
         }
 
-        return list;
+        return set;
     }
 
-    public static void addXWallBlocks(List<BlockPos> list, int x, int y1, int y2, int z1, int z2) {
+    public static void addXWallBlocks(Set<BlockPos> list, int x, int y1, int y2, int z1, int z2) {
         for (int z = z1; z <= z2; z++) {
         for (int y = y1; y <= y2; y++)
             list.add(new BlockPos(x, y, z));
         }
     }
 
-    public static void addZWallBlocks(List<BlockPos> list, int x1, int x2, int y1, int y2, int z) {
+    public static void addZWallBlocks(Set<BlockPos> list, int x1, int x2, int y1, int y2, int z) {
         for (int x = x1; x <= x2; x++) {
         for (int y = y1; y <= y2; y++)
             list.add(new BlockPos(x, y, z));
         }
     }
 
-    public static void addXHollowWallBlocks(List<BlockPos> list, int x, int y1, int y2, int z1, int z2) {
+    public static void addXHollowWallBlocks(Set<BlockPos> list, int x, int y1, int y2, int z1, int z2) {
         Line.addZLineBlocks(list, z1, z2, x, y1);
         Line.addZLineBlocks(list, z1, z2, x, y2);
         Line.addYLineBlocks(list, y1, y2, x, z1);
         Line.addYLineBlocks(list, y1, y2, x, z2);
     }
 
-    public static void addZHollowWallBlocks(List<BlockPos> list, int x1, int x2, int y1, int y2, int z) {
+    public static void addZHollowWallBlocks(Set<BlockPos> list, int x1, int x2, int y1, int y2, int z) {
         Line.addXLineBlocks(list, x1, x2, y1, z);
         Line.addXLineBlocks(list, x1, x2, y2, z);
         Line.addYLineBlocks(list, y1, y2, x1, z);

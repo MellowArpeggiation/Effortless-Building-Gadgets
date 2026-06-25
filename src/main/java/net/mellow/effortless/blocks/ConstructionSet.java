@@ -2,11 +2,12 @@ package net.mellow.effortless.blocks;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+import net.mellow.effortless.buildmode.BaseBuildMode.Operation;
 import net.mellow.effortless.buildmode.History;
 import net.mellow.effortless.buildmode.History.HistoryBlock;
 import net.mellow.effortless.buildmode.VoxelRenderer;
-import net.mellow.effortless.buildmode.BaseBuildMode.Operation;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -21,10 +22,27 @@ public class ConstructionSet {
     public final BlockPos from;
     public final BlockPos to;
 
-    public ConstructionSet(List<BlockPos> positions, BlockPos from, BlockPos to) {
-        this.positions = positions;
-        this.from = from;
-        this.to = to;
+    public ConstructionSet(Set<BlockPos> positions) {
+        this.positions = new ArrayList<>(positions);
+
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        int minZ = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE;
+        int maxY = Integer.MIN_VALUE;
+        int maxZ = Integer.MIN_VALUE;
+
+        for (BlockPos pos : this.positions) {
+            if (pos.x < minX) minX = pos.x;
+            if (pos.y < minY) minY = pos.y;
+            if (pos.z < minZ) minZ = pos.z;
+            if (pos.x > maxX) maxX = pos.x;
+            if (pos.y > maxY) maxY = pos.y;
+            if (pos.z > maxZ) maxZ = pos.z;
+        }
+
+        this.from = new BlockPos(minX, minY, minZ);
+        this.to = new BlockPos(maxX, maxY, maxZ);
     }
 
     public ConstructionSet(BlockPos pos) {

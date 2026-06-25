@@ -1,7 +1,9 @@
 package net.mellow.effortless.buildmode.modes;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.blocks.ConstructionSet;
@@ -20,7 +22,7 @@ public class Line extends TwoClicksBuildMode {
         BlockPos to = findLine(player, from, true);
         if (to == null) return null;
 
-        return new ConstructionSet(getLineBlocks(from, to), from, to);
+        return new ConstructionSet(getLineBlocks(from, to));
     }
 
 
@@ -74,36 +76,36 @@ public class Line extends TwoClicksBuildMode {
         return BlockPos.containing(selected.lineBound);
     }
 
-    public static List<BlockPos> getLineBlocks(BlockPos from, BlockPos to) {
+    public static Set<BlockPos> getLineBlocks(BlockPos from, BlockPos to) {
         BlockPos min = BlockPos.min(from, to);
         BlockPos max = BlockPos.max(from, to);
 
-        List<BlockPos> list = new ArrayList<>();
+        Set<BlockPos> set = new HashSet<>();
 
         if (min.x != max.x) {
-            addXLineBlocks(list, min.x, max.x, min.y, min.z);
+            addXLineBlocks(set, min.x, max.x, min.y, min.z);
         } else if (min.y != max.y) {
-            addYLineBlocks(list, min.y, max.y, min.x, min.z);
+            addYLineBlocks(set, min.y, max.y, min.x, min.z);
         } else {
-            addZLineBlocks(list, min.z, max.z, min.x, min.y);
+            addZLineBlocks(set, min.z, max.z, min.x, min.y);
         }
 
-        return list;
+        return set;
     }
 
-    public static void addXLineBlocks(List<BlockPos> list, int x1, int x2, int y, int z) {
+    public static void addXLineBlocks(Set<BlockPos> list, int x1, int x2, int y, int z) {
         for (int x = x1; x <= x2; x++) {
             list.add(new BlockPos(x, y, z));
         }
     }
 
-    public static void addYLineBlocks(List<BlockPos> list, int y1, int y2, int x, int z) {
+    public static void addYLineBlocks(Set<BlockPos> list, int y1, int y2, int x, int z) {
         for (int y = y1; y <= y2; y++) {
             list.add(new BlockPos(x, y, z));
         }
     }
 
-    public static void addZLineBlocks(List<BlockPos> list, int z1, int z2, int x, int y) {
+    public static void addZLineBlocks(Set<BlockPos> list, int z1, int z2, int x, int y) {
         for (int z = z1; z <= z2; z++) {
             list.add(new BlockPos(x, y, z));
         }
