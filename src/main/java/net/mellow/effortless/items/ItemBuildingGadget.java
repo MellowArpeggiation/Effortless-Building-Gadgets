@@ -18,8 +18,13 @@ import cpw.mods.fml.relauncher.SideOnly;
 import cofh.api.energy.IEnergyContainerItem;
 import net.mellow.effortless.Config;
 import net.mellow.effortless.Keybinds;
+import net.mellow.effortless.blocks.BlockPos;
+import net.mellow.effortless.blocks.ConstructionSet;
+import net.mellow.effortless.blocks.PlaceableStack;
+import net.mellow.effortless.blocks.Vec3;
 import net.mellow.effortless.buildmode.BuildModes;
 import net.mellow.effortless.buildmode.History;
+import net.mellow.effortless.buildmode.BaseBuildMode.Operation;
 import net.mellow.effortless.buildmode.ModeOptions.BuildingAction;
 import net.mellow.effortless.buildmode.ModeOptions.BuildingMode;
 import net.mellow.effortless.buildmode.ModeOptions.BuildingOption;
@@ -93,7 +98,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         if (isRenderingOverlay) {
             BuildingMode mode = getMode(stack);
             if (mode.handler != null) {
-                String overlayOverride = mode.handler.getItemHighlight(stack);
+                String overlayOverride = ConstructionSet.getItemHighlight(stack);
                 if (overlayOverride != null) return overlayOverride;
             }
         }
@@ -122,18 +127,43 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
             if (energy < Config.capacityRF / 10) return stack;
         }
 
-        int blocksPlaced = mode.handler.add(stack, selected, world, player, mop);
+        mode.handler.savePlaceable(stack, selected, world, player, mop);
 
-        if (requiresPower) {
-            stack.stackTagCompound.setInteger("energy", Math.max(0, energy - blocksPlaced * Config.consumptionRF));
+        // int blocksPlaced = mode.handler.add(stack, selected, world, player, mop);
+        
+        if (mode.handler.click(stack, world, player, mop)) {
+            ConstructionSet set = mode.handler.getBlocks(stack, world, player);
+            if (set == null) return stack;
+
+            PlaceableStack placed = mode.handler.getPlaceable(stack);
+            if (placed == null) {
+                mode.handler.clear(stack);
+                return stack;
+            }
+
+            int blocksPlaced = set.build(world, player, placed, false);
+
+            mode.handler.clear(stack);
+
+            if (requiresPower) {
+                stack.stackTagCompound.setInteger("energy", Math.max(0, energy - blocksPlaced * Config.consumptionRF));
+            }
         }
 
         return stack;
     }
 
     public boolean onItemLeftClick(EntityPlayer player, ItemStack stack) {
+        if (stack.stackTagCompound == null) stack.stackTagCompound = new NBTTagCompound();
+
         BuildingMode mode = getMode(stack);
         if (mode.handler == null) return false;
+
+        // MovingObjectPosition mop = BuildModes.getMop(player, mode.handler.reach(stack));
+
+        // int blocksBroken = mode.handler.click(stack, null, player.worldObj, player, mop, Operation.BREAK);
+
+        // return false;
 
         return mode.handler.clear(stack);
     }
@@ -196,13 +226,24 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         }
     }
 
+    public static Operation getOperation(ItemStack stack) {
+        if (stack.stackTagCompound == null) return Operation.PLACE;
+        try {
+            return Operation.valueOf(stack.stackTagCompound.getString("operation"));
+        } catch (IllegalArgumentException ex) {
+            return Operation.PLACE;
+        }
+    }
+
 
     @Override
     public void render(World world, EntityPlayer player, ItemStack stack, float partialTicks) {
         if (stack.stackTagCompound == null) stack.stackTagCompound = new NBTTagCompound();
+
         BuildingMode mode = getMode(stack);
         if (mode.handler == null) return;
-        mode.handler.render(stack, world, player, partialTicks);
+        
+        mode.handler.renderNew(stack, world, player, partialTicks);
     }
 
     @Override

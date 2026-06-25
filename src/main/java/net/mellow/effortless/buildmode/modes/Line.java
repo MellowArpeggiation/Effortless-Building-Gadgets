@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.mellow.effortless.blocks.BlockPos;
+import net.mellow.effortless.blocks.ConstructionSet;
 import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.blocks.Vec3;
 import net.mellow.effortless.buildmode.BuildModes;
@@ -14,6 +15,19 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 public class Line extends TwoClicksBuildMode {
+
+    // @Override
+    // public BlockPos getSecondPos(ItemStack stack, World world, EntityPlayer player, BlockPos from) {
+    //     return findLine(player, from, true);
+    // }
+
+    @Override
+    public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, BlockPos from) {
+        BlockPos to = findLine(player, from, true);
+        if (to == null) return null;
+
+        return new ConstructionSet(getLineBlocks(from, to), from, to);
+    }
 
     @Override
     public int add(ItemStack stack, PlaceableStack selected, World world, EntityPlayer player, BlockPos from) {

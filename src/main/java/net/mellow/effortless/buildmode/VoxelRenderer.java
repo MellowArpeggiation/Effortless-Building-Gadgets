@@ -8,12 +8,13 @@ import java.util.Set;
 import org.lwjgl.opengl.GL11;
 
 import net.mellow.effortless.blocks.BlockPos;
+import net.mellow.effortless.buildmode.BaseBuildMode.Operation;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.player.EntityPlayer;
 
 public class VoxelRenderer {
     
-    public static void renderBlocks(List<BlockPos> blocks, EntityPlayer player, float partialTicks) {
+    public static void renderBlocks(List<BlockPos> blocks, EntityPlayer player, Operation operation, float partialTicks) {
         Tessellator tess = Tessellator.instance;
         
         double dx = player.prevPosX + (player.posX - player.prevPosX) * partialTicks;
@@ -30,7 +31,11 @@ public class VoxelRenderer {
         tess.setTranslation(-dx, -dy, -dz);
         tess.startDrawing(GL11.GL_LINES);
         tess.setBrightness(240);
-        tess.setColorRGBA_F(1F, 1F, 1F, 1F);
+        
+        switch (operation) {
+            case PLACE: tess.setColorRGBA_F(0.5F, 1.0F, 1.0F, 1.0F); break;
+            case BREAK: tess.setColorRGBA_F(1.0F, 0.0F, 0.0F, 1.0F); break;
+        }
         
         
         // edge detection is a fucky thing
@@ -194,10 +199,20 @@ public class VoxelRenderer {
         GL11.glPopMatrix();
     }
     
-    public static void renderBlock(BlockPos block, EntityPlayer player, float partialTicks) {
+    public static void renderBlock(BlockPos block, EntityPlayer player, Operation operation, float partialTicks) {
         List<BlockPos> list = new ArrayList<>();
         list.add(block);
-        renderBlocks(list, player, partialTicks);
+        renderBlocks(list, player, operation, partialTicks);
+    }
+    
+    // TODO: kill these ones too
+    public static void renderBlock(BlockPos block, EntityPlayer player, float partialTicks) {
+        int warnonme = 0;
+        renderBlock(block, player, Operation.PLACE, partialTicks);
+    }
+
+    public static void renderBlocks(List<BlockPos> blocks, EntityPlayer player, float partialTicks) {
+        renderBlocks(blocks, player, Operation.PLACE, partialTicks);
     }
     
 }

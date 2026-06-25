@@ -36,6 +36,10 @@ public class PlaceableStack {
         Block block = ((ItemBlock) stack.getItem()).field_150939_a;
         int meta = stack.getItemDamage();
 
+        return isPlaceable(block, meta);
+    }
+
+    public static boolean isPlaceable(Block block, int meta) {
         // Compat fixes
         if (block instanceof BlockBed) return false; // EFR makes its own "ItemBLOCKBed" placement class which doesn't conform to the vanilla expectation of it not being a non-ItemBlock Item, guh
 

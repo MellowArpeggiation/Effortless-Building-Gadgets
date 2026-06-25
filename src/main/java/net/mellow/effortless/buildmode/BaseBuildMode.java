@@ -2,9 +2,11 @@ package net.mellow.effortless.buildmode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import net.mellow.effortless.blocks.BlockMeta;
 import net.mellow.effortless.blocks.BlockPos;
+import net.mellow.effortless.blocks.ConstructionSet;
 import net.mellow.effortless.blocks.IConsumableStack;
 import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.blocks.Vec3;
@@ -21,9 +23,48 @@ import net.minecraft.world.World;
 
 public abstract class BaseBuildMode {
 
+    public static enum Operation {
+        PLACE,
+        BREAK,
+    }
+
     public abstract int add(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop);
     public abstract boolean clear(ItemStack stack);
     public abstract boolean isPlacing(ItemStack stack);
+
+    // TODO: abstract these when finished, and kill the above crap!!
+    // on true, attempt to get placed blocks and commit them to the world
+    public boolean click(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
+        return false;
+    }
+
+    // TODO: same here!!!!!
+    // return null if getblocks failed, should ignore clicks and draw nothing
+    public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player) {
+        return null;
+    }
+
+    // put the placeable somewhere safe, will retrieve it upon finishing
+    public void savePlaceable(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop) {
+        if (isPlacing(stack)) return; // only on first click
+
+        BlockPos from = BlockPos.fromRaycastReplaceable(world, mop);
+        PlaceableStack place = PlaceableStack.getPlaceableStack(selected, world, player, from.x, from.y, from.z, mop.sideHit, new Vec3(mop.hitVec));
+
+        stack.stackTagCompound.setTag("place", place.save());
+    }
+
+    public PlaceableStack getPlaceable(ItemStack stack) {
+        return PlaceableStack.load(stack.stackTagCompound.getCompoundTag("place"));
+    }
+
+    public void renderNew(ItemStack stack, World world, EntityPlayer player, float partialTicks) {
+        
+    }
+
+    // public int remove(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
+    //     return 0;
+    // }
 
     public int reach(ItemStack stack) {
         return 32;
@@ -102,6 +143,59 @@ public abstract class BaseBuildMode {
         return blocksPlaced;
     }
 
+    public static int build(World world, EntityPlayer player, PlaceableStack selected, BlockPos position, boolean replaceAny) {
+        List<BlockPos> list = new ArrayList<>();
+        list.add(position);
+        return build(world, player, selected, list, replaceAny);
+    }
+    
+    // // break is a reserved keyword dum dum
+    // public static int destroy(World world, EntityPlayer player, List<BlockPos> positions) {
+    //     if (world.isRemote) return 0;
+    //     if (positions == null || positions.isEmpty()) return 0;
+
+    //     boolean isSurvival = !player.capabilities.isCreativeMode;
+
+    //     List<HistoryBlock> previousState = new ArrayList<>();
+
+    //     // List<IConsumableStack> depletedStacks = new ArrayList<>();
+    //     // IConsumableStack toDeplete = null;
+
+    //     Map<BlockPos, PlaceableStack> placed = History.getPlaceableMap(player);
+
+    //     // if (isSurvival) {
+    //     //     toDeplete = IConsumableStack.getMatchingStack(player, selected, positions.size());
+    //     //     if (toDeplete == null) return 0;
+
+    //     //     depletedStacks.add(toDeplete);
+    //     // }
+
+    //     int blocksBroken = 0;
+
+    //     for (BlockPos pos : positions) {
+    //         Block block = world.getBlock(pos.x, pos.y, pos.z);
+    //         if (block.isAir(world, pos.x, pos.y, pos.z)) continue; // skip double breaking
+
+    //         int meta = world.getBlockMetadata(pos.x, pos.y, pos.z);
+    //         if (!PlaceableStack.isPlaceable(block, meta)) continue;
+
+    //         if (isSurvival) {
+
+    //         }
+            
+    //         world.setBlockToAir(pos.x, pos.y, pos.z);
+    //         blocksBroken++;
+    //     }
+
+    //     return blocksBroken;
+    // }
+
+    // public static int destroy(World world, EntityPlayer player, BlockPos position) {
+    //     List<BlockPos> list = new ArrayList<>();
+    //     list.add(position);
+    //     return destroy(world, player, list);
+    // }
+
     public static BlockPos getFinalPos(EntityPlayer player, BlockPos from, Vec3 pos) {
         return getFinalPos(player, from, pos, false, false, false);
     }
@@ -128,12 +222,6 @@ public abstract class BaseBuildMode {
         }
 
         return BlockPos.containing(pos);
-    }
-
-    public static int build(World world, EntityPlayer player, PlaceableStack selected, BlockPos position, boolean replaceAny) {
-        List<BlockPos> list = new ArrayList<>();
-        list.add(position);
-        return build(world, player, selected, list, replaceAny);
     }
 
     public abstract void render(ItemStack stack, World world, EntityPlayer player, float partialTicks);

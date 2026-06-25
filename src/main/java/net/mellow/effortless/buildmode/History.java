@@ -2,6 +2,7 @@ package net.mellow.effortless.buildmode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -21,6 +22,8 @@ public class History {
     private static Map<UUID, FixedStack<History>> undoStacks = new HashMap<>();
     private static Map<UUID, FixedStack<History>> redoStacks = new HashMap<>();
 
+    private static Map<UUID, Map<BlockPos, PlaceableStack>> placedBlocks = new HashMap<>();
+
     public static void clear(EntityPlayer player) {
         undoStacks.remove(player.getUniqueID());
         redoStacks.remove(player.getUniqueID());
@@ -39,6 +42,15 @@ public class History {
         }
 
         undoStacks.get(player.getUniqueID()).push(history);
+
+        if (!placedBlocks.containsKey(player.getUniqueID())) {
+            placedBlocks.put(player.getUniqueID(), new HashMap<>(blocks.size()));
+        }
+
+        Map<BlockPos, PlaceableStack> playerPlaced = placedBlocks.get(player.getUniqueID());
+        for (HistoryBlock block : blocks) {
+            playerPlaced.put(block.pos, placed);
+        }
     }
 
     public static boolean undo(World world, EntityPlayer player) {
@@ -164,12 +176,30 @@ public class History {
         return true;
     }
 
+    public static Map<BlockPos, PlaceableStack> getPlaceableMap(EntityPlayer player) {
+        return placedBlocks.get(player.getUniqueID());
+    }
+
+    // // Removes blocks from the list that the player is not allowed to break
+    // public static void filterBreakable(EntityPlayer player, List<BlockPos> blocks) {
+    //     Iterator<BlockPos> iterator = blocks.iterator();
+
+    //     while (iterator.hasNext()) {
+    //         BlockPos pos = iterator.next();
+
+    //         Block block = world.getBlock
+
+    //         // first, remove blocks we are NOT allowed to touch
+
+    //     }
+    // }
+
     public History(List<HistoryBlock> blocks, PlaceableStack placed) {
         this.state = blocks.toArray(new HistoryBlock[blocks.size()]);
         this.placed = placed;
     }
 
-    // gonna try to be somewhat efficient with memory usage here
+    // gonna try to be somewhat efficient with memory usage here (haha)
     public final HistoryBlock[] state;
     public final PlaceableStack placed;
     
