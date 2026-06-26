@@ -12,6 +12,7 @@ public class NetworkHandler {
         int i = 0;
 
         instance.registerMessage(NBTControlPacket.HandlerServer.class, NBTControlPacket.class, i++, Side.SERVER);
+        instance.registerMessage(MouseClickPacket.HandlerServer.class, MouseClickPacket.class, i++, Side.SERVER);
     }
 
 }

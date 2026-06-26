@@ -29,7 +29,9 @@ import net.mellow.effortless.buildmode.ModeOptions.BuildingOption;
 import net.mellow.effortless.compat.Compat;
 import net.mellow.effortless.compat.CompatBaublesExpanded;
 import net.mellow.effortless.gui.GuiBuildingGadget;
+import net.mellow.effortless.network.IItemClickReceiver;
 import net.mellow.effortless.network.IItemControlReceiver;
+import net.mellow.effortless.network.MouseClickPacket;
 import net.mellow.effortless.util.MathUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
@@ -49,7 +51,7 @@ import net.minecraft.world.World;
     @Optional.Interface(iface = "api.hbm.energymk2.IBatteryItem", modid = Compat.MODID_NTM),
     @Optional.Interface(iface = "baubles.api.expanded.IBaubleExpanded", modid = Compat.MODID_BAUBLES),
 })
-public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRenderPreview, IItemGuiProvider, IItemControlReceiver, IEnergyContainerItem, IBatteryItem, IBaubleExpanded {
+public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRenderPreview, IItemGuiProvider, IItemControlReceiver, IItemClickReceiver, IEnergyContainerItem, IBatteryItem, IBaubleExpanded {
 
     // why ItemFlintAndSteel?
     // A bunch of mods like Adventure Backpacks use these classes to determine if something is a "tool",
@@ -104,32 +106,35 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         return super.getItemStackDisplayName(stack);
     }
 
-    @Override
-    public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player) {
-        if (stack.stackTagCompound == null) stack.stackTagCompound = new NBTTagCompound();
-        return onItemRightClick(stack, world, player, getSelected(stack));
-    }
+    // @Override
+    // public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player) {
+    //     if (stack.stackTagCompound == null) stack.stackTagCompound = new NBTTagCompound();
+    //     return onItemRightClick(stack, world, player, getSelected(stack));
+    // }
 
-    public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player, ItemStack selected) {
-        onItemClick(stack, world, player, selected, Operation.PLACE);
+    // public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player, ItemStack selected) {
+    //     onItemClick(stack, world, player, selected, Operation.PLACE);
 
-        return stack;
-    }
+    //     return stack;
+    // }
 
-    public boolean onItemLeftClick(EntityPlayer player, ItemStack stack) {
-        return onItemClick(stack, player.worldObj, player, stack, Operation.BREAK);
-    }
+    // public boolean onItemLeftClick(EntityPlayer player, ItemStack stack) {
+    //     return onItemClick(stack, player.worldObj, player, stack, Operation.BREAK);
+    // }
 
-    // Return true if a left click interaction should be cancelled
-    public boolean onItemClick(ItemStack stack, World world, EntityPlayer player, ItemStack selected, Operation operation) {
+    // Return true if ALL default click handling should be cancelled
+    public boolean onItemClick(ItemStack stack, World world, EntityPlayer player, Operation operation) {
         if (stack.stackTagCompound == null) stack.stackTagCompound = new NBTTagCompound();
 
         BuildingMode mode = getMode(stack);
         if (mode.handler == null) return false;
 
+        ItemStack selected = getSelected(stack);
+
         // Clicking the other mouse button cancels whatever operation we're doing
         if (mode.handler.isPlacing(stack) && getOperation(stack) != operation) {
-            return mode.handler.clear(stack);
+            mode.handler.clear(stack);
+            return true;
         }
 
         stack.stackTagCompound.setString("operation", operation.toString());
@@ -152,14 +157,14 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         // attempt to commit blocks to world if true, can still be cancelled if the set doesn't resolve
         if (mode.handler.click(stack, world, player, mop, operation)) {
             ConstructionSet set = mode.handler.getBlocks(stack, world, player, mop, operation);
-            if (set == null) return false;
+            if (set == null) return true;
 
             mode.handler.clear(stack);
             int blocksModified = 0;
 
             if (operation == Operation.PLACE) {
                 PlaceableStack placed = mode.handler.getPlaceable(stack);
-                if (placed == null) return false;
+                if (placed == null) return true;
     
                 blocksModified = set.build(world, player, placed, false);
             } else {
@@ -171,7 +176,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
             }
         }
 
-        return false;
+        return true;
     }
 
     @Override
@@ -412,6 +417,15 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
     @Override
     public String[] getBaubleTypes(ItemStack stack) {
         return new String[] { BaubleExpandedSlots.charmType };
+    }
+
+    @Override
+    public void receiveClick(EntityPlayer player, ItemStack stack, MouseClickPacket packet) {
+        onItemClick(stack, player.worldObj, player, packet.operation);
+
+        player.inventoryContainer.detectAndSendChanges();
+
+        System.out.println("event received and handled!!!");
     }
 
 }
