@@ -82,6 +82,10 @@ public class GuiBuildingGadget extends GuiScreen {
             ItemStack usableStack = stack.copy();
             usableStack.stackSize = 1;
 
+            if (PlaceableStack.stackMatches(currentBlock, usableStack)) {
+                currentBlock = usableStack;
+            }
+
             usableBlocks.add(usableStack);
         }
     }

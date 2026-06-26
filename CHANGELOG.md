@@ -5,3 +5,4 @@
 
 ## Fixed
 * High ratio ellipses tend to have holes in them
+* GUI not showing currently selected block when opened

@@ -2,6 +2,7 @@ package net.mellow.effortless.blocks;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import net.mellow.effortless.buildmode.BaseBuildMode.Operation;
@@ -56,14 +57,14 @@ public class ConstructionSet {
         if (world.isRemote) return 0;
         if (positions == null || positions.isEmpty()) return 0;
 
-        boolean useItems = !player.capabilities.isCreativeMode;
+        boolean preserveItems = !player.capabilities.isCreativeMode;
 
         List<HistoryBlock> previousState = new ArrayList<>();
 
         List<IConsumableStack> depletedStacks = new ArrayList<>();
         IConsumableStack toDeplete = null;
 
-        if (useItems) {
+        if (preserveItems) {
             toDeplete = IConsumableStack.getMatchingStack(player, selected, positions.size());
             if (toDeplete == null) return 0;
 
@@ -84,7 +85,7 @@ public class ConstructionSet {
 
             if (!world.checkNoEntityCollision(bb, player)) continue;
 
-            if (useItems) {
+            if (preserveItems) {
                 if (toDeplete == null) {
                     toDeplete = IConsumableStack.getMatchingStack(player, selected, positions.size() - blocksPlaced);
                     if (toDeplete == null) break;
@@ -114,7 +115,7 @@ public class ConstructionSet {
         }
         History.addUndo(player, previousState, selected);
 
-        if (useItems) {
+        if (preserveItems) {
             IConsumableStack.cleanInventory(player, depletedStacks);
         }
 
@@ -127,6 +128,16 @@ public class ConstructionSet {
         if (world.isRemote) return 0;
         if (positions == null || positions.isEmpty()) return 0;
 
+        // if we're preserving items, only allow breaking blocks we've actually placed
+        // for two reasons:
+        //  1) we don't know what the hell the items were for ones we haven't placed
+        //  2) survival players can cheese a lot of things otherwise
+        boolean preserveItems = !player.capabilities.isCreativeMode;
+        Map<BlockPos, PlaceableStack> placeMap = History.getPlaceableMap(player);
+        if (preserveItems && placeMap == null) return 0;
+
+        ItemStack toReturn = null;
+
         Block.SoundType stepSound = null;
 
         int blocksBroken = 0;
@@ -137,10 +148,31 @@ public class ConstructionSet {
 
             if (!PlaceableStack.isPlaceable(block, meta)) continue; // only break blocks we're allowed to
 
+            if (preserveItems) {
+                PlaceableStack placed = placeMap.get(pos);
+                if (placed == null) continue;
+
+                if (toReturn != null && (toReturn.stackSize >= 64 || !PlaceableStack.stackMatches(toReturn, placed.stack))) {
+                    player.inventory.addItemStackToInventory(toReturn);
+                    toReturn = null;
+                }
+
+                if (toReturn == null) {
+                    toReturn = placed.stack.copy();
+                    toReturn.stackSize = 0;
+                }
+                
+                toReturn.stackSize++;
+            }
+
             if (stepSound == null) stepSound = block.stepSound;
             world.setBlockToAir(pos.x, pos.y, pos.z);
 
             blocksBroken++;
+        }
+
+        if (toReturn != null) {
+            player.inventory.addItemStackToInventory(toReturn);
         }
 
         if (stepSound != null) {
