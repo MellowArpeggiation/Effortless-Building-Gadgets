@@ -14,7 +14,7 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
     public abstract ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, BlockPos pos0, BlockPos pos1);
 
     @Override
-    public boolean click(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
+    public boolean click(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, Operation operation) {
         BlockPos pos1 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos1"));
         if (pos1 != null) return true;
 
@@ -28,7 +28,7 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
             return false;
         }
         
-        pos0 = BlockPos.fromRaycastReplaceable(world, mop);
+        pos0 = BlockPos.fromRaycastInteraction(world, mop, operation);
         if (pos0 == null) return false;
         stack.stackTagCompound.setTag("pos0", pos0.save());
 
@@ -36,7 +36,7 @@ public abstract class ThreeClicksBuildMode extends BaseBuildMode {
     }
 
     @Override
-    public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
+    public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, Operation operation) {
         BlockPos pos0 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
         if (pos0 == null) return null;
 

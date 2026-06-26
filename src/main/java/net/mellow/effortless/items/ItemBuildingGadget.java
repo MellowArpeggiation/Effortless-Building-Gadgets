@@ -111,51 +111,67 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
     }
 
     public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player, ItemStack selected) {
+        onItemClick(stack, world, player, selected, Operation.PLACE);
+
+        return stack;
+    }
+
+    public boolean onItemLeftClick(EntityPlayer player, ItemStack stack) {
+        return onItemClick(stack, player.worldObj, player, stack, Operation.BREAK);
+    }
+
+    // Return true if a left click interaction should be cancelled
+    public boolean onItemClick(ItemStack stack, World world, EntityPlayer player, ItemStack selected, Operation operation) {
         if (stack.stackTagCompound == null) stack.stackTagCompound = new NBTTagCompound();
 
         BuildingMode mode = getMode(stack);
-        if (mode.handler == null) return stack;
+        if (mode.handler == null) return false;
+
+        // Clicking the other mouse button cancels whatever operation we're doing
+        if (mode.handler.isPlacing(stack) && getOperation(stack) != operation) {
+            return mode.handler.clear(stack);
+        }
+
+        stack.stackTagCompound.setString("operation", operation.toString());
 
         MovingObjectPosition mop = BuildModes.getMop(player, mode.handler.reach(stack));
-        if (mop == null) return stack; // only occurs on NaN
+        if (mop == null) return false; // only occurs on NaN
 
         boolean requiresPower = Config.consumesEnergy && !player.capabilities.isCreativeMode && (hasRF || hasHE);
         int energy = stack.stackTagCompound.getInteger("energy");
 
         if (requiresPower) {
             // require 10% charge to operate
-            if (energy < Config.capacityRF / 10) return stack;
+            if (energy < Config.capacityRF / 10) return false;
         }
 
-        mode.handler.savePlaceable(stack, selected, world, player, mop);
+        if (operation == Operation.PLACE) {
+            mode.handler.savePlaceable(stack, selected, world, player, mop);
+        }
         
         // attempt to commit blocks to world if true, can still be cancelled if the set doesn't resolve
-        if (mode.handler.click(stack, world, player, mop)) {
-            ConstructionSet set = mode.handler.getBlocks(stack, world, player, mop);
-            if (set == null) return stack;
+        if (mode.handler.click(stack, world, player, mop, operation)) {
+            ConstructionSet set = mode.handler.getBlocks(stack, world, player, mop, operation);
+            if (set == null) return false;
 
             mode.handler.clear(stack);
+            int blocksModified = 0;
 
-            PlaceableStack placed = mode.handler.getPlaceable(stack);
-            if (placed == null) return stack;
-
-            int blocksPlaced = set.build(world, player, placed, false);
+            if (operation == Operation.PLACE) {
+                PlaceableStack placed = mode.handler.getPlaceable(stack);
+                if (placed == null) return false;
+    
+                blocksModified = set.build(world, player, placed, false);
+            } else {
+                blocksModified = set.destroy(world, player);
+            }
 
             if (requiresPower) {
-                stack.stackTagCompound.setInteger("energy", Math.max(0, energy - blocksPlaced * Config.consumptionRF));
+                stack.stackTagCompound.setInteger("energy", Math.max(0, energy - blocksModified * Config.consumptionRF));
             }
         }
 
-        return stack;
-    }
-
-    public boolean onItemLeftClick(EntityPlayer player, ItemStack stack) {
-        if (stack.stackTagCompound == null) stack.stackTagCompound = new NBTTagCompound();
-
-        BuildingMode mode = getMode(stack);
-        if (mode.handler == null) return false;
-
-        return mode.handler.clear(stack);
+        return false;
     }
 
     @Override
@@ -228,14 +244,14 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
     private ConstructionSet lastRendered;
     private long lastTick;
 
-    private ConstructionSet getCachedSet(World world, EntityPlayer player, ItemStack stack, MovingObjectPosition mop, BuildingMode mode) {
+    private ConstructionSet getCachedSet(World world, EntityPlayer player, ItemStack stack, MovingObjectPosition mop, BuildingMode mode, Operation operation) {
         if (!mode.handler.shouldRender(stack)) return null;
 
         if (world.getTotalWorldTime() == lastTick) {
             return lastRendered;
         }
 
-        lastRendered = mode.handler.getBlocks(stack, world, player, mop);
+        lastRendered = mode.handler.getBlocks(stack, world, player, mop, operation);
         lastTick = world.getTotalWorldTime();
 
         return lastRendered;
@@ -251,11 +267,13 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         MovingObjectPosition mop = BuildModes.getMop(player, mode.handler.reach(stack));
         if (mop == null) return; // only occurs for NaN
 
-        ConstructionSet set = getCachedSet(world, player, stack, mop, mode);
+        Operation operation = getOperation(stack);
+
+        ConstructionSet set = getCachedSet(world, player, stack, mop, mode, operation);
         if (set == null) {
             Minecraft.getMinecraft().renderGlobal.drawSelectionBox(player, mop, 0, partialTicks);
         } else {
-            set.render(player, partialTicks, mode.handler.showHighlight(stack));
+            set.render(player, partialTicks, operation, mode.handler.showHighlight(stack));
         }
     }
 

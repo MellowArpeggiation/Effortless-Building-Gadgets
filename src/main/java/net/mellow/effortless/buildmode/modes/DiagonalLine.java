@@ -18,13 +18,13 @@ import net.minecraft.world.World;
 public class DiagonalLine extends BaseBuildMode {
 
     @Override
-    public boolean click(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
+    public boolean click(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, Operation operation) {
         BuildingAction type = ItemBuildingGadget.getAction(stack, BuildingOption.LINE_DRAW);
-        if (type == BuildingAction.LINE_CONSTRUCT) return clickConstruct(stack, world, player, mop);
-        return clickPointToPoint(stack, world, player, mop);
+        if (type == BuildingAction.LINE_CONSTRUCT) return clickConstruct(stack, world, player, mop, operation);
+        return clickPointToPoint(stack, world, player, mop, operation);
     }
 
-    private boolean clickConstruct(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
+    private boolean clickConstruct(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, Operation operation) {
         BlockPos pos1 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos1"));
         if (pos1 != null) return true;
 
@@ -38,18 +38,18 @@ public class DiagonalLine extends BaseBuildMode {
             return false;
         }
 
-        pos0 = BlockPos.fromRaycastReplaceable(world, mop);
+        pos0 = BlockPos.fromRaycastInteraction(world, mop, operation);
         if (pos0 == null) return false;        
         stack.stackTagCompound.setTag("pos0", pos0.save());
 
         return false;
     }
 
-    private boolean clickPointToPoint(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
+    private boolean clickPointToPoint(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, Operation operation) {
         BlockPos from = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
         if (from != null) return true;
 
-        from = BlockPos.fromRaycastReplaceable(world, mop);
+        from = BlockPos.fromRaycastInteraction(world, mop, operation);
         if (from == null) return false;
         stack.stackTagCompound.setTag("pos0", from.save());
 
@@ -57,13 +57,13 @@ public class DiagonalLine extends BaseBuildMode {
     }
 
     @Override
-    public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
+    public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, Operation operation) {
         BuildingAction type = ItemBuildingGadget.getAction(stack, BuildingOption.LINE_DRAW);
-        if (type == BuildingAction.LINE_CONSTRUCT) return getBlocksConstruct(stack, world, player, mop);
-        return getBlocksPointToPoint(stack, world, player, mop);
+        if (type == BuildingAction.LINE_CONSTRUCT) return getBlocksConstruct(stack, world, player, mop, operation);
+        return getBlocksPointToPoint(stack, world, player, mop, operation);
     }
 
-    private ConstructionSet getBlocksConstruct(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
+    private ConstructionSet getBlocksConstruct(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, Operation operation) {
         BlockPos pos0 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
         if (pos0 == null) return null;
 
@@ -81,11 +81,11 @@ public class DiagonalLine extends BaseBuildMode {
         return new ConstructionSet(DiagonalLine.getDiagonalLineBlocks(pos0, pos2, 10));
     }
 
-    private ConstructionSet getBlocksPointToPoint(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
+    private ConstructionSet getBlocksPointToPoint(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, Operation operation) {
         BlockPos pos0 = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
         if (pos0 == null) return null;
 
-        BlockPos pos2 = BlockPos.fromRaycastReplaceable(world, mop);
+        BlockPos pos2 = BlockPos.fromRaycastInteraction(world, mop, operation);
         if (pos2 == null) return null;
         return new ConstructionSet(DiagonalLine.getDiagonalLineBlocks(pos0, pos2, 10));
     }

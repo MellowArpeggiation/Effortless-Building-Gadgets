@@ -1,5 +1,6 @@
 package net.mellow.effortless.blocks;
 
+import net.mellow.effortless.buildmode.BaseBuildMode.Operation;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
@@ -56,6 +57,11 @@ public class BlockPos implements Comparable<BlockPos> {
         if (mop == null || mop.typeOfHit != MovingObjectType.BLOCK) return null;
         boolean replaceable = world.getBlock(mop.blockX, mop.blockY, mop.blockZ).isReplaceable(world, mop.blockX, mop.blockY, mop.blockZ);
         return replaceable ? fromRaycast(mop) : fromRaycastSide(mop);
+    }
+
+    public static BlockPos fromRaycastInteraction(World world, MovingObjectPosition mop, Operation operation) {
+        if (operation == Operation.BREAK) return fromRaycast(mop);
+        return fromRaycastReplaceable(world, mop);
     }
 
     public static BlockPos containing(Vec3 vec) {

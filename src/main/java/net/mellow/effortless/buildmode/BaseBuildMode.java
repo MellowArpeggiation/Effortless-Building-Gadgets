@@ -21,10 +21,10 @@ public abstract class BaseBuildMode {
     public abstract boolean isPlacing(ItemStack stack);
 
     // on true, attempt to get placed blocks and commit them to the world
-    public abstract boolean click(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop);
+    public abstract boolean click(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, Operation operation);
 
     // return null if getblocks failed, should ignore clicks and draw nothing
-    public abstract ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop);
+    public abstract ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, Operation operation);
 
     // put the placeable somewhere safe, will retrieve it upon finishing
     public void savePlaceable(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop) {

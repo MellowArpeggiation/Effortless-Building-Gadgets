@@ -16,12 +16,12 @@ import net.minecraftforge.common.util.ForgeDirection;
 public class Air extends BaseBuildMode {
 
     @Override
-    public boolean click(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
+    public boolean click(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, Operation operation) {
         return true;
     }
 
     @Override
-    public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
+    public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, Operation operation) {
         if (mop.typeOfHit == MovingObjectType.MISS) {
             return new ConstructionSet(new BlockPos(mop.blockX, mop.blockY, mop.blockZ));
         }

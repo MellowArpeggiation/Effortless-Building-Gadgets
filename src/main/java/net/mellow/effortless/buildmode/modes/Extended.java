@@ -11,13 +11,13 @@ import net.minecraft.world.World;
 public class Extended extends BaseBuildMode {
 
     @Override
-    public boolean click(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
+    public boolean click(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, Operation operation) {
         return true;
     }
 
     @Override
-    public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
-        BlockPos pos = BlockPos.fromRaycastReplaceable(world, mop);
+    public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, Operation operation) {
+        BlockPos pos = BlockPos.fromRaycastInteraction(world, mop, operation);
         if (pos == null) return null;
         return new ConstructionSet(pos);
     }

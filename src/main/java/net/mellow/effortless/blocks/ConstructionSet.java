@@ -123,12 +123,35 @@ public class ConstructionSet {
         return blocksPlaced;
     }
 
-    public void render(EntityPlayer player, float partialTicks) {
-        render(player, partialTicks, true);
+    public int destroy(World world, EntityPlayer player) {
+        if (world.isRemote) return 0;
+        if (positions == null || positions.isEmpty()) return 0;
+
+        Block.SoundType stepSound = null;
+
+        int blocksBroken = 0;
+
+        for (BlockPos pos : positions) {
+            Block block = world.getBlock(pos.x, pos.y, pos.z);
+            int meta = world.getBlockMetadata(pos.x, pos.y, pos.z);
+
+            if (!PlaceableStack.isPlaceable(block, meta)) continue; // only break blocks we're allowed to
+
+            if (stepSound == null) stepSound = block.stepSound;
+            world.setBlockToAir(pos.x, pos.y, pos.z);
+
+            blocksBroken++;
+        }
+
+        if (stepSound != null) {
+            world.playSoundEffect(player.posX, player.posY, player.posZ, stepSound.getBreakSound(), (stepSound.getVolume() + 1.0F) / 2.0F, stepSound.getPitch() * 0.8F);
+        }
+
+        return blocksBroken;
     }
 
-    public void render(EntityPlayer player, float partialTicks, boolean showHighlight) {
-        VoxelRenderer.renderBlocks(positions, player, Operation.PLACE, partialTicks);
+    public void render(EntityPlayer player, float partialTicks, Operation operation, boolean showHighlight) {
+        VoxelRenderer.renderBlocks(positions, player, operation, partialTicks);
         if (showHighlight) updateHighlight(from, to, positions.size());
     }
 

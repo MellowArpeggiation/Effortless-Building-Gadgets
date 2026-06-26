@@ -12,11 +12,11 @@ public abstract class TwoClicksBuildMode extends BaseBuildMode {
     public abstract ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, BlockPos from);
 
     @Override
-    public boolean click(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
+    public boolean click(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, Operation operation) {
         BlockPos from = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
         if (from != null) return true;
 
-        from = BlockPos.fromRaycastReplaceable(world, mop);
+        from = BlockPos.fromRaycastInteraction(world, mop, operation);
         if (from == null) return false;
         stack.stackTagCompound.setTag("pos0", from.save());
 
@@ -24,7 +24,7 @@ public abstract class TwoClicksBuildMode extends BaseBuildMode {
     }
 
     @Override
-    public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop) {
+    public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, Operation operation) {
         BlockPos from = BlockPos.load(stack.stackTagCompound.getCompoundTag("pos0"));
         if (from == null) return null;
 
