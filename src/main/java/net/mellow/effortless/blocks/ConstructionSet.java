@@ -12,6 +12,7 @@ import net.mellow.effortless.buildmode.VoxelRenderer;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
@@ -57,19 +58,12 @@ public class ConstructionSet {
         if (world.isRemote) return 0;
         if (positions == null || positions.isEmpty()) return 0;
 
-        boolean preserveItems = !player.capabilities.isCreativeMode;
+        boolean useItems = !player.capabilities.isCreativeMode;
 
         List<HistoryBlock> previousState = new ArrayList<>();
 
         List<IConsumableStack> depletedStacks = new ArrayList<>();
         IConsumableStack toDeplete = null;
-
-        if (preserveItems) {
-            toDeplete = IConsumableStack.getMatchingStack(player, selected, positions.size());
-            if (toDeplete == null) return 0;
-
-            depletedStacks.add(toDeplete);
-        }
 
         int blocksPlaced = 0;
 
@@ -85,7 +79,7 @@ public class ConstructionSet {
 
             if (!world.checkNoEntityCollision(bb, player)) continue;
 
-            if (preserveItems) {
+            if (useItems) {
                 if (toDeplete == null) {
                     toDeplete = IConsumableStack.getMatchingStack(player, selected, positions.size() - blocksPlaced);
                     if (toDeplete == null) break;
@@ -99,23 +93,28 @@ public class ConstructionSet {
                 }
             }
 
-            previousState.add(new HistoryBlock(new BlockMeta(block, meta), selected.place, new BlockPos(pos.x, pos.y, pos.z)));
             world.setBlock(pos.x, pos.y, pos.z, selected.place.block, selected.place.meta, 1);
+            
+            TileEntity tile = null;
             if (selected.nbt != null) {
-                TileEntity tile = world.getTileEntity(pos.x, pos.y, pos.z);
+                tile = world.getTileEntity(pos.x, pos.y, pos.z);
                 selected.nbt.setInteger("x", pos.x);
                 selected.nbt.setInteger("y", pos.y);
                 selected.nbt.setInteger("z", pos.z);
                 tile.readFromNBT(selected.nbt);
                 tile.markDirty();
             }
+
             world.markBlockForUpdate(pos.x, pos.y, pos.z);
+
+            previousState.add(new HistoryBlock(new BlockMeta(block, meta), selected.place, new BlockPos(pos.x, pos.y, pos.z), tile, selected));
 
             blocksPlaced++;
         }
-        History.addUndo(player, previousState, selected);
 
-        if (preserveItems) {
+        History.addUndo(player, previousState, selected, Operation.PLACE);
+
+        if (useItems) {
             IConsumableStack.cleanInventory(player, depletedStacks);
         }
 
@@ -123,6 +122,8 @@ public class ConstructionSet {
 
         return blocksPlaced;
     }
+
+    public static BlockMeta AIR = new BlockMeta(Blocks.air, 0);
 
     public int destroy(World world, EntityPlayer player) {
         if (world.isRemote) return 0;
@@ -132,11 +133,11 @@ public class ConstructionSet {
         // for two reasons:
         //  1) we don't know what the hell the items were for ones we haven't placed
         //  2) survival players can cheese a lot of things otherwise
-        boolean preserveItems = !player.capabilities.isCreativeMode;
+        boolean useItems = !player.capabilities.isCreativeMode;
         Map<BlockPos, PlaceableStack> placeMap = History.getPlaceableMap(player);
-        if (preserveItems && placeMap == null) return 0;
-
         ItemStack toReturn = null;
+
+        List<HistoryBlock> previousState = new ArrayList<>();
 
         Block.SoundType stepSound = null;
 
@@ -147,9 +148,9 @@ public class ConstructionSet {
             int meta = world.getBlockMetadata(pos.x, pos.y, pos.z);
 
             if (!PlaceableStack.isPlaceable(block, meta)) continue; // only break blocks we're allowed to
+            PlaceableStack placed = placeMap.get(pos);
 
-            if (preserveItems) {
-                PlaceableStack placed = placeMap.get(pos);
+            if (useItems) {
                 if (placed == null) continue;
 
                 if (toReturn != null && (toReturn.stackSize >= 64 || !PlaceableStack.stackMatches(toReturn, placed.stack))) {
@@ -166,10 +167,13 @@ public class ConstructionSet {
             }
 
             if (stepSound == null) stepSound = block.stepSound;
+            previousState.add(new HistoryBlock(new BlockMeta(block, meta), AIR, pos, world.getTileEntity(pos.x, pos.y, pos.z), placed));
             world.setBlockToAir(pos.x, pos.y, pos.z);
 
             blocksBroken++;
         }
+        
+        History.addUndo(player, previousState, null, Operation.BREAK);
 
         if (toReturn != null) {
             player.inventory.addItemStackToInventory(toReturn);

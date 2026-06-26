@@ -17,7 +17,6 @@ import net.minecraft.world.World;
 
 public class Circle extends TwoClicksBuildMode {
     
-    // TODO: highlight text fix!!
     @Override
     public ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, BlockPos from) {
         BuildingAction tilt = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_TILT);

@@ -25,5 +25,10 @@ public class ConsumableStack implements IConsumableStack {
     public void flush() {
         if (stack.stackSize <= 0) inventory.setInventorySlotContents(index, null);
     }
+
+    @Override
+    public ItemStack getStack() {
+        return stack;
+    }
     
 }

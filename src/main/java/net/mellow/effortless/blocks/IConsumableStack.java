@@ -14,6 +14,7 @@ public interface IConsumableStack {
     
     public boolean consumeOne();
     public void flush();
+    public ItemStack getStack();
 
     // maximumToPlace may not be the final amount placed, just an upper bound!!
     public static IConsumableStack getMatchingStack(EntityPlayer player, PlaceableStack selected, int maximumToPlace) {
@@ -57,7 +58,7 @@ public interface IConsumableStack {
     @Optional.Method(modid = Compat.MODID_AE2)
     public static IConsumableStack getAE2Stack(EntityPlayer player, PlaceableStack selected, int maximumToPlace) {
         // we just passing this shit on
-        return ConsumableAE2Stack.getStack(player, selected, maximumToPlace);
+        return ConsumableAE2Stack.getStack(player, selected.stack, maximumToPlace);
     }
 
 }
