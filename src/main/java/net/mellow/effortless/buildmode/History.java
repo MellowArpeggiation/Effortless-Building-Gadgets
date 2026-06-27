@@ -93,7 +93,7 @@ public class History {
             if (!current.equals(step.isNow)) continue; // only undo blocks that haven't changed
             if (current.equals(step.type)) continue; // only place blocks that aren't already the current type
 
-            if (useItems) {
+            if (useItems && !current.block.isAir(world, x, y, z)) {
                 PlaceableStack placed = placeMap.get(step.pos);
                 if (placed == null) continue;
 

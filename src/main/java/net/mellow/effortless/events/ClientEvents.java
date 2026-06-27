@@ -83,9 +83,13 @@ public class ClientEvents {
         MovingObjectPosition mop = mc.objectMouseOver;
         if (mop == null) return false;
 
-        ItemStack held = player.getHeldItem();
+        ItemStack gadgetStack = ItemBuildingGadget.getGadgetStack(player);
+        if (gadgetStack == null) return false;
 
-        if (held == null || !(held.getItem() instanceof ItemBuildingGadget gadget)) return false;
+        ItemStack heldStack = player.getHeldItem();
+        if (heldStack != gadgetStack && !PlaceableStack.isPlaceable(heldStack)) return false;
+
+        ItemBuildingGadget gadget = (ItemBuildingGadget) gadgetStack.getItem();
 
         int x = mop.blockX;
         int y = mop.blockY;
@@ -101,7 +105,9 @@ public class ClientEvents {
             if (ForgeEventFactory.onPlayerInteract(player, Action.RIGHT_CLICK_BLOCK, x, y, z, side, player.worldObj).isCanceled())
                 return true;
 
-            if (held.getItem() != null && held.getItem().onItemUseFirst(held, player, player.worldObj, x, y, z, side, subX, subY, subZ)) {
+            mc.playerController.syncCurrentPlayItem();
+
+            if (heldStack != null && heldStack.getItem() != null && heldStack.getItem().onItemUseFirst(heldStack, player, player.worldObj, x, y, z, side, subX, subY, subZ)) {
                 return true;
             }
 
@@ -114,7 +120,7 @@ public class ClientEvents {
             }
         }
         
-        if (gadget.onItemClick(held, player.worldObj, player, operation)) {
+        if (gadget.onItemClick(gadgetStack, heldStack, player.worldObj, player, operation)) {
             NetworkHandler.instance.sendToServer(new MouseClickPacket(operation, x, y, z, side, subX, subY, subZ));
             return true;
         }

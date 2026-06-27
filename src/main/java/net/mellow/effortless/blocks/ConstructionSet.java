@@ -150,7 +150,7 @@ public class ConstructionSet {
             if (!PlaceableStack.isPlaceable(block, meta)) continue; // only break blocks we're allowed to
             PlaceableStack placed = placeMap.get(pos);
 
-            if (useItems) {
+            if (useItems && !block.isAir(world, pos.x, pos.y, pos.z)) {
                 if (placed == null) continue;
 
                 if (toReturn != null && (toReturn.stackSize >= 64 || !PlaceableStack.stackMatches(toReturn, placed.stack))) {

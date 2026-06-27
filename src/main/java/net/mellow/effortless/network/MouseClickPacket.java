@@ -73,13 +73,13 @@ public class MouseClickPacket implements IMessage {
         public IMessage onMessage(MouseClickPacket message, MessageContext ctx) {
             EntityPlayerMP player = ctx.getServerHandler().playerEntity;
 
-            ItemStack held = player.getHeldItem();
-            if (held == null || !(held.getItem() instanceof IItemClickReceiver)) {
-                held = CompatBaublesExpanded.getGadgetFromBaubles(player);
-                if (held == null) return null;
+            ItemStack stack = player.getHeldItem();
+            if (stack == null || !(stack.getItem() instanceof IItemClickReceiver)) {
+                stack = CompatBaublesExpanded.getGadgetFromBaubles(player);
+                if (stack == null) return null;
             }
 
-            ((IItemClickReceiver) held.getItem()).receiveClick(player, held, message);
+            ((IItemClickReceiver) stack.getItem()).receiveClick(player, stack, message);
 
             return null;
         }

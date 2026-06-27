@@ -82,6 +82,13 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         this.setFull3D();
     }
 
+    public static ItemStack getGadgetStack(EntityPlayer player) {
+        ItemStack held = player.getHeldItem();
+        if (held != null && held.getItem() instanceof ItemBuildingGadget) return held;
+
+        return CompatBaublesExpanded.getGadgetFromBaubles(player);
+    }
+
     @Override
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean bool) {
@@ -115,6 +122,8 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
     // Server-side click handling!
     @Override
     public void receiveClick(EntityPlayerMP player, ItemStack gadgetStack, MouseClickPacket packet) {
+        ItemStack held = player.getHeldItem();
+
         // First thing, we need to check for regular interactions with blocks first
         if (packet.operation == Operation.PLACE) {
             if (packet.face != 255) { // -1 becomes 255 when parsed as an unsigned byte
@@ -137,13 +146,13 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
             }
         }
 
-        onItemClick(gadgetStack, player.worldObj, player, packet.operation);
+        onItemClick(gadgetStack, held, player.worldObj, player, packet.operation);
 
         player.inventoryContainer.detectAndSendChanges();
     }
 
     // Return true if ALL default click handling should be cancelled
-    public boolean onItemClick(ItemStack stack, World world, EntityPlayer player, Operation operation) {
+    public boolean onItemClick(ItemStack stack, ItemStack held, World world, EntityPlayer player, Operation operation) {
         if (stack.stackTagCompound == null) stack.stackTagCompound = new NBTTagCompound();
 
         BuildingMode mode = getMode(stack);
@@ -168,7 +177,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         MovingObjectPosition mop = BuildModes.getMop(player, mode.handler.reach(stack));
         if (mop == null) return false; // only occurs on NaN
 
-        ItemStack selected = getSelected(stack);
+        ItemStack selected = stack.getItem() != held.getItem() ? held : getSelected(stack);
 
         if (operation == Operation.PLACE) {
             mode.handler.savePlaceable(stack, selected, world, player, mop);
