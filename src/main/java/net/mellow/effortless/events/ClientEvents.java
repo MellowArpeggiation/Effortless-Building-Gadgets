@@ -14,10 +14,14 @@ import net.mellow.effortless.network.NetworkHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 
 public class ClientEvents {
     
@@ -67,21 +71,51 @@ public class ClientEvents {
         if (!Mouse.getEventButtonState()) return; // only care about mouse down
 
         if (button == mc.gameSettings.keyBindAttack.getKeyCode()) {
-            if (useGadget(player, Operation.BREAK)) event.setCanceled(true);
+            if (useGadget(mc, player, Operation.BREAK)) event.setCanceled(true);
         }
         if (button == mc.gameSettings.keyBindUseItem.getKeyCode()) {
-            if (useGadget(player, Operation.PLACE)) event.setCanceled(true);
+            if (useGadget(mc, player, Operation.PLACE)) event.setCanceled(true);
         }
     }
 
     // Return true to cancel mouse event entirely!
-    public boolean useGadget(EntityPlayer player, Operation operation) {
+    private boolean useGadget(Minecraft mc, EntityPlayer player, Operation operation) {
+        MovingObjectPosition mop = mc.objectMouseOver;
+        if (mop == null) return false;
+
         ItemStack held = player.getHeldItem();
 
         if (held == null || !(held.getItem() instanceof ItemBuildingGadget gadget)) return false;
+
+        int x = mop.blockX;
+        int y = mop.blockY;
+        int z = mop.blockZ;
+        int side = mop.sideHit;
+        float subX = (float)mop.hitVec.xCoord - (float)mop.blockX;
+        float subY = (float)mop.hitVec.yCoord - (float)mop.blockY;
+        float subZ = (float)mop.hitVec.zCoord - (float)mop.blockZ;
+
+        // First, check regular client-side interactions
+        if (operation == Operation.PLACE) {
+            // Check for client side interaction cancels!
+            if (ForgeEventFactory.onPlayerInteract(player, Action.RIGHT_CLICK_BLOCK, x, y, z, side, player.worldObj).isCanceled())
+                return true;
+
+            if (held.getItem() != null && held.getItem().onItemUseFirst(held, player, player.worldObj, x, y, z, side, subX, subY, subZ)) {
+                return true;
+            }
+
+            if (!player.isSneaking() || player.getHeldItem() == null || player.getHeldItem().getItem().doesSneakBypassUse(player.worldObj, x, y, z, player)) {
+                // If the client receives a block activation, perform only vanilla behaviour
+                if (player.worldObj.getBlock(mop.blockX, mop.blockY, mop.blockZ).onBlockActivated(player.worldObj, x, y, z, player, side, subX, subY, subZ)) {
+                    mc.playerController.netClientHandler.addToSendQueue(new C08PacketPlayerBlockPlacement(x, y, z, side, player.inventory.getCurrentItem(), subX, subY, subZ));
+                    return true;
+                }
+            }
+        }
         
         if (gadget.onItemClick(held, player.worldObj, player, operation)) {
-            NetworkHandler.instance.sendToServer(new MouseClickPacket(operation, 0, 0, 0, 0, 0, 0, 0));
+            NetworkHandler.instance.sendToServer(new MouseClickPacket(operation, x, y, z, side, subX, subY, subZ));
             return true;
         }
 

@@ -14,6 +14,7 @@ import cofh.api.energy.IEnergyContainerItem;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional;
+import cpw.mods.fml.common.eventhandler.Event.Result;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.mellow.effortless.Config;
@@ -33,11 +34,13 @@ import net.mellow.effortless.network.IItemClickReceiver;
 import net.mellow.effortless.network.IItemControlReceiver;
 import net.mellow.effortless.network.MouseClickPacket;
 import net.mellow.effortless.util.MathUtil;
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemFlintAndSteel;
 import net.minecraft.item.ItemStack;
@@ -45,6 +48,9 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
+import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 
 @Optional.InterfaceList({
     @Optional.Interface(iface = "cofh.api.energy.IEnergyContainerItem", modid = Compat.MODID_COFH),
@@ -106,21 +112,35 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         return super.getItemStackDisplayName(stack);
     }
 
-    // @Override
-    // public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player) {
-    //     if (stack.stackTagCompound == null) stack.stackTagCompound = new NBTTagCompound();
-    //     return onItemRightClick(stack, world, player, getSelected(stack));
-    // }
+    // Server-side click handling!
+    @Override
+    public void receiveClick(EntityPlayerMP player, ItemStack gadgetStack, MouseClickPacket packet) {
+        // First thing, we need to check for regular interactions with blocks first
+        if (packet.operation == Operation.PLACE) {
+            if (packet.face != 255) { // -1 becomes 255 when parsed as an unsigned byte
+                PlayerInteractEvent event = ForgeEventFactory.onPlayerInteract(player, Action.RIGHT_CLICK_BLOCK, packet.blockX, packet.blockY, packet.blockZ, packet.face, player.worldObj);
+                if (event.isCanceled() || event.useItem == Result.DENY) {
+                    return;
+                }
 
-    // public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player, ItemStack selected) {
-    //     onItemClick(stack, world, player, selected, Operation.PLACE);
+                Block block = player.worldObj.getBlock(packet.blockX, packet.blockY, packet.blockZ);
+                boolean useBlock = !player.isSneaking() || player.getHeldItem() == null;
+                if (!useBlock) useBlock = player.getHeldItem().getItem().doesSneakBypassUse(player.worldObj, packet.blockX, packet.blockY, packet.blockZ, player);
 
-    //     return stack;
-    // }
+                if (useBlock) {
+                    if (event.useBlock != Result.DENY) {
+                        if (block.onBlockActivated(player.worldObj, packet.blockX, packet.blockY, packet.blockZ, player, packet.face, packet.subX, packet.subY, packet.subZ)) {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
 
-    // public boolean onItemLeftClick(EntityPlayer player, ItemStack stack) {
-    //     return onItemClick(stack, player.worldObj, player, stack, Operation.BREAK);
-    // }
+        onItemClick(gadgetStack, player.worldObj, player, packet.operation);
+
+        player.inventoryContainer.detectAndSendChanges();
+    }
 
     // Return true if ALL default click handling should be cancelled
     public boolean onItemClick(ItemStack stack, World world, EntityPlayer player, Operation operation) {
@@ -128,8 +148,6 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
 
         BuildingMode mode = getMode(stack);
         if (mode.handler == null) return false;
-
-        ItemStack selected = getSelected(stack);
 
         // Clicking the other mouse button cancels whatever operation we're doing
         if (mode.handler.isPlacing(stack) && getOperation(stack) != operation) {
@@ -139,9 +157,6 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
 
         stack.stackTagCompound.setString("operation", operation.toString());
 
-        MovingObjectPosition mop = BuildModes.getMop(player, mode.handler.reach(stack));
-        if (mop == null) return false; // only occurs on NaN
-
         boolean requiresPower = Config.consumesEnergy && !player.capabilities.isCreativeMode && (hasRF || hasHE);
         int energy = stack.stackTagCompound.getInteger("energy");
 
@@ -149,6 +164,11 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
             // require 10% charge to operate
             if (energy < Config.capacityRF / 10) return false;
         }
+
+        MovingObjectPosition mop = BuildModes.getMop(player, mode.handler.reach(stack));
+        if (mop == null) return false; // only occurs on NaN
+
+        ItemStack selected = getSelected(stack);
 
         if (operation == Operation.PLACE) {
             mode.handler.savePlaceable(stack, selected, world, player, mop);
@@ -417,15 +437,6 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
     @Override
     public String[] getBaubleTypes(ItemStack stack) {
         return new String[] { BaubleExpandedSlots.charmType };
-    }
-
-    @Override
-    public void receiveClick(EntityPlayer player, ItemStack stack, MouseClickPacket packet) {
-        onItemClick(stack, player.worldObj, player, packet.operation);
-
-        player.inventoryContainer.detectAndSendChanges();
-
-        System.out.println("event received and handled!!!");
     }
 
 }

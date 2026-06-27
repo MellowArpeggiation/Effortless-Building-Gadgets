@@ -6,7 +6,7 @@ import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import io.netty.buffer.ByteBuf;
 import net.mellow.effortless.buildmode.BaseBuildMode.Operation;
 import net.mellow.effortless.compat.CompatBaublesExpanded;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 
 public class MouseClickPacket implements IMessage {
@@ -71,7 +71,7 @@ public class MouseClickPacket implements IMessage {
 
         @Override
         public IMessage onMessage(MouseClickPacket message, MessageContext ctx) {
-            EntityPlayer player = ctx.getServerHandler().playerEntity;
+            EntityPlayerMP player = ctx.getServerHandler().playerEntity;
 
             ItemStack held = player.getHeldItem();
             if (held == null || !(held.getItem() instanceof IItemClickReceiver)) {

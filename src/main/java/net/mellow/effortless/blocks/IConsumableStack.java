@@ -51,8 +51,6 @@ public interface IConsumableStack {
         }
 
         ConsumableAE2Stack.hasChecked = false;
-
-        player.inventoryContainer.detectAndSendChanges();
     }
 
     @Optional.Method(modid = Compat.MODID_AE2)
