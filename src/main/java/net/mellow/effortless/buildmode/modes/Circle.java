@@ -29,7 +29,7 @@ public class Circle extends TwoClicksBuildMode {
         BuildingAction start = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_START);
         BuildingAction fill = ItemBuildingGadget.getAction(stack, BuildingOption.FILL);
 
-        return new ConstructionSet(getCircleBlocks(from, to, start == BuildingAction.CIRCLE_START_CORNER, fill == BuildingAction.FULL));
+        return new ConstructionSet(getCircleBlocks(from, to, start == BuildingAction.CIRCLE_START_CORNER, fill == BuildingAction.FULL), from);
     }
 
     public static Set<BlockPos> getCircleBlocks(BlockPos from, BlockPos to, boolean fromCorner, boolean fill) {

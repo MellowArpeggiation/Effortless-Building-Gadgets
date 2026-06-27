@@ -26,7 +26,7 @@ public class SlopeFloor extends ThreeClicksBuildMode {
         BlockPos pos1 = getMid(stack, world, player, pos0);
         if (pos1 == null) return null;
 
-        return new ConstructionSet(Floor.getFloorBlocks(pos0, pos1, true));
+        return new ConstructionSet(Floor.getFloorBlocks(pos0, pos1, true), pos0);
     }
 
     @Override
@@ -35,7 +35,7 @@ public class SlopeFloor extends ThreeClicksBuildMode {
         if (pos2 == null) return null;
 
         BuildingAction edge = ItemBuildingGadget.getAction(stack, BuildingOption.RAISED_EDGE);
-        return new ConstructionSet(getSlopeFloorBlocks(pos0, pos1, pos2, edge == BuildingAction.SHORT_EDGE));
+        return new ConstructionSet(getSlopeFloorBlocks(pos0, pos1, pos2, edge == BuildingAction.SHORT_EDGE), pos0);
     }
 
     //Add slope floor from first to second

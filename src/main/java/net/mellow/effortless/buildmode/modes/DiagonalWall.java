@@ -26,7 +26,7 @@ public class DiagonalWall extends ThreeClicksBuildMode {
         BlockPos pos1 = getMid(stack, world, player, pos0);
         if (pos1 == null) return null;
 
-        return new ConstructionSet(DiagonalLine.getDiagonalLineBlocks(pos0, pos1, 1));
+        return new ConstructionSet(DiagonalLine.getDiagonalLineBlocks(pos0, pos1, 1), pos0);
     }
 
     @Override
@@ -35,7 +35,7 @@ public class DiagonalWall extends ThreeClicksBuildMode {
         if (pos2 == null) return null;
 
         BuildingAction fillMode = ItemBuildingGadget.getAction(stack, BuildingOption.FILL);
-        return new ConstructionSet(getDiagonalWallBlocks(pos0, pos1, pos2, fillMode == BuildingAction.FULL));
+        return new ConstructionSet(getDiagonalWallBlocks(pos0, pos1, pos2, fillMode == BuildingAction.FULL), pos0);
     }
 
     //Add diagonal wall from first to second

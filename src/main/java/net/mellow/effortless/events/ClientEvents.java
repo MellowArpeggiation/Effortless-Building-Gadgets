@@ -122,6 +122,7 @@ public class ClientEvents {
         
         if (gadget.onItemClick(gadgetStack, heldStack, player.worldObj, player, operation)) {
             NetworkHandler.instance.sendToServer(new MouseClickPacket(operation, x, y, z, side, subX, subY, subZ));
+            player.swingItem();
             return true;
         }
 

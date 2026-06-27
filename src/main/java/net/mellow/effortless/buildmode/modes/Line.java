@@ -22,7 +22,7 @@ public class Line extends TwoClicksBuildMode {
         BlockPos to = findLine(player, from, true);
         if (to == null) return null;
 
-        return new ConstructionSet(getLineBlocks(from, to));
+        return new ConstructionSet(getLineBlocks(from, to), from);
     }
 
 

@@ -32,7 +32,7 @@ public class Cube extends ThreeClicksBuildMode {
         if (pos1 == null) return null;
 
         BuildingAction fillMode = ItemBuildingGadget.getAction(stack, BuildingOption.CUBE_FILL);
-        return new ConstructionSet(getFloorBlocksUsingCubeFill(pos0, pos1, fillMode));
+        return new ConstructionSet(getFloorBlocksUsingCubeFill(pos0, pos1, fillMode), pos0);
     }
 
     @Override
@@ -41,7 +41,7 @@ public class Cube extends ThreeClicksBuildMode {
         if (pos2 == null) return null;
 
         BuildingAction fillMode = ItemBuildingGadget.getAction(stack, BuildingOption.CUBE_FILL);
-        return new ConstructionSet(getCubeBlocks(pos0, pos2, fillMode));
+        return new ConstructionSet(getCubeBlocks(pos0, pos2, fillMode), pos0);
     }
 
     public static BlockPos findHeight(EntityPlayer player, BlockPos firstPos, BlockPos secondPos, boolean skipRaytrace) {

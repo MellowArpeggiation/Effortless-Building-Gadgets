@@ -28,7 +28,7 @@ public class Sphere extends ThreeClicksBuildMode {
 
         BuildingAction start = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_START);
         BuildingAction fill = ItemBuildingGadget.getAction(stack, BuildingOption.FILL);
-        return new ConstructionSet(Circle.getCircleBlocks(pos0, pos1, start == BuildingAction.CIRCLE_START_CORNER, fill == BuildingAction.FULL));
+        return new ConstructionSet(Circle.getCircleBlocks(pos0, pos1, start == BuildingAction.CIRCLE_START_CORNER, fill == BuildingAction.FULL), pos0);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class Sphere extends ThreeClicksBuildMode {
 
         BuildingAction start = ItemBuildingGadget.getAction(stack, BuildingOption.CIRCLE_START);
         BuildingAction fill = ItemBuildingGadget.getAction(stack, BuildingOption.FILL);
-        return new ConstructionSet(getSphereBlocks(pos0, pos1, pos2, start == BuildingAction.CIRCLE_START_CORNER, fill == BuildingAction.FULL));
+        return new ConstructionSet(getSphereBlocks(pos0, pos1, pos2, start == BuildingAction.CIRCLE_START_CORNER, fill == BuildingAction.FULL), pos0);
     }
 
     public static Set<BlockPos> getSphereBlocks(BlockPos from, BlockPos mid, BlockPos to, boolean fromCorner, boolean fill) {

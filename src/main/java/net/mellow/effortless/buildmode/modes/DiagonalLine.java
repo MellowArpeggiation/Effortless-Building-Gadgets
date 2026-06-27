@@ -72,13 +72,13 @@ public class DiagonalLine extends BaseBuildMode {
             pos1 = Floor.findFloor(player, pos0, true);
             if (pos1 == null) return null;
 
-            return new ConstructionSet(DiagonalLine.getDiagonalLineBlocks(pos0, pos1, 10));
+            return new ConstructionSet(DiagonalLine.getDiagonalLineBlocks(pos0, pos1, 10), pos0);
         }
 
         BlockPos pos2 = Cube.findHeight(player, pos0, pos1, true);
         if (pos2 == null) return null;
 
-        return new ConstructionSet(DiagonalLine.getDiagonalLineBlocks(pos0, pos2, 10));
+        return new ConstructionSet(DiagonalLine.getDiagonalLineBlocks(pos0, pos2, 10), pos0);
     }
 
     private ConstructionSet getBlocksPointToPoint(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, Operation operation) {
@@ -87,7 +87,7 @@ public class DiagonalLine extends BaseBuildMode {
 
         BlockPos pos2 = BlockPos.fromRaycastInteraction(world, mop, operation);
         if (pos2 == null) return null;
-        return new ConstructionSet(DiagonalLine.getDiagonalLineBlocks(pos0, pos2, 10));
+        return new ConstructionSet(DiagonalLine.getDiagonalLineBlocks(pos0, pos2, 10), pos0);
     }
 
     @Override

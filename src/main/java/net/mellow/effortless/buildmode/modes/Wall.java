@@ -27,7 +27,7 @@ public class Wall extends TwoClicksBuildMode {
         if (to == null) return null;
 
         BuildingAction fillMode = ItemBuildingGadget.getAction(stack, BuildingOption.FILL);
-        return new ConstructionSet(getWallBlocks(from, to, fillMode == BuildingAction.FULL));
+        return new ConstructionSet(getWallBlocks(from, to, fillMode == BuildingAction.FULL), from);
     }
 
     public static BlockPos findWall(EntityPlayer player, BlockPos firstPos, boolean skipRaytrace) {

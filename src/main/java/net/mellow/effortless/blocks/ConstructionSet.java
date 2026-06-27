@@ -1,6 +1,7 @@
 package net.mellow.effortless.blocks;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,11 +22,13 @@ import net.minecraft.world.World;
 public class ConstructionSet {
     
     public final List<BlockPos> positions;
+    public final BlockPos start;
     public final BlockPos from;
     public final BlockPos to;
 
-    public ConstructionSet(Set<BlockPos> positions) {
+    public ConstructionSet(Set<BlockPos> positions, BlockPos start) {
         this.positions = new ArrayList<>(positions);
+        this.start = start;
 
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
@@ -50,13 +53,20 @@ public class ConstructionSet {
     public ConstructionSet(BlockPos pos) {
         this.positions = new ArrayList<>();
         this.positions.add(pos);
+        this.start = pos;
         this.from = pos;
         this.to = pos;
+    }
+
+    private void sortPositions() {
+        positions.sort(new DistanceComparator(start));
     }
 
     public int build(World world, EntityPlayer player, PlaceableStack selected, boolean replaceAny) {
         if (world.isRemote) return 0;
         if (positions == null || positions.isEmpty()) return 0;
+
+        sortPositions();
 
         boolean useItems = !player.capabilities.isCreativeMode;
 
@@ -212,6 +222,31 @@ public class ConstructionSet {
         String title = highlightTitle;
         highlightTitle = null;
         return title;
+    }
+
+    public static class DistanceComparator implements Comparator<BlockPos> {
+
+        // compares square distances (skipping expensive shitty sqrt)
+
+        private final BlockPos start;
+
+        public DistanceComparator(BlockPos start) {
+            this.start = start;
+        }
+
+        @Override
+        public int compare(BlockPos a, BlockPos b) {
+            int ax = a.x - start.x;
+            int ay = a.y - start.y;
+            int az = a.z - start.z;
+
+            int bx = b.x - start.x;
+            int by = b.y - start.y;
+            int bz = b.z - start.z;
+
+            return ax * ax + ay * ay + az * az < bx * bx + by * by + bz * bz ? -1 : 1;
+        }
+
     }
     
 }
