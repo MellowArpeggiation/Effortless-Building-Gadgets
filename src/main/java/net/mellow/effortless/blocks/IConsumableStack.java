@@ -50,7 +50,9 @@ public interface IConsumableStack {
             consumable.flush();
         }
 
-        ConsumableAE2Stack.hasChecked = false;
+        if (CompatAE2.loaded) {
+            ConsumableAE2Stack.hasChecked = false;
+        }
     }
 
     @Optional.Method(modid = Compat.MODID_AE2)
