@@ -87,7 +87,7 @@ public class ConstructionSet {
 
             AxisAlignedBB bb = AxisAlignedBB.getBoundingBox(pos.x, pos.y, pos.z, pos.x + 1, pos.y + 1, pos.z + 1);
 
-            if (!world.checkNoEntityCollision(bb, player)) continue;
+            if (!world.checkNoEntityCollision(bb)) continue;
 
             if (useItems) {
                 if (toDeplete == null) {

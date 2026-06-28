@@ -180,6 +180,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         ItemStack selected = (held == null || held.getItem() instanceof ItemBuildingGadget) ? getSelected(stack) : held;
 
         if (operation == Operation.PLACE) {
+            if (held == null) return false;
             mode.handler.savePlaceable(stack, selected, world, player, mop);
         }
         
