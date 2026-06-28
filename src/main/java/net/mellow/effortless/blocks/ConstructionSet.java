@@ -237,15 +237,19 @@ public class ConstructionSet {
 
         @Override
         public int compare(BlockPos a, BlockPos b) {
-            int ax = a.x - start.x;
-            int ay = a.y - start.y;
-            int az = a.z - start.z;
+            float sa = sqrDist(a);
+            float sb = sqrDist(b);
 
-            int bx = b.x - start.x;
-            int by = b.y - start.y;
-            int bz = b.z - start.z;
+            if (sa == sb) return 0;
+            return sa < sb ? -1 : 1;
+        }
 
-            return ax * ax + ay * ay + az * az < bx * bx + by * by + bz * bz ? -1 : 1;
+        private float sqrDist(BlockPos pos) {
+            float x = pos.x - start.x;
+            float y = pos.y - start.y;
+            float z = pos.z - start.z;
+
+            return x * x + y * y + z * z;
         }
 
     }
