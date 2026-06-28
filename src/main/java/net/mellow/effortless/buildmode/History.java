@@ -35,6 +35,8 @@ public class History {
     }
 
     public static void addUndo(EntityPlayer player, List<HistoryBlock> blocks, PlaceableStack placed, Operation operation) {
+        if (blocks.size() == 0) return;
+        
         History history = new History(blocks, operation);
 
         if (!undoStacks.containsKey(player.getUniqueID())) {
@@ -122,6 +124,8 @@ public class History {
     }
 
     public static void addRedo(EntityPlayer player, List<HistoryBlock> blocks, Operation operation) {
+        if (blocks.size() == 0) return;
+
         History history = new History(blocks, operation);
 
         if (!redoStacks.containsKey(player.getUniqueID())) {

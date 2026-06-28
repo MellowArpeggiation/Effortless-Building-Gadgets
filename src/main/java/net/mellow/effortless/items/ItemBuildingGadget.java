@@ -177,7 +177,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         MovingObjectPosition mop = BuildModes.getMop(player, mode.handler.reach(stack));
         if (mop == null) return false; // only occurs on NaN
 
-        ItemStack selected = stack.getItem() != held.getItem() ? held : getSelected(stack);
+        ItemStack selected = (held == null || held.getItem() instanceof ItemBuildingGadget) ? getSelected(stack) : held;
 
         if (operation == Operation.PLACE) {
             mode.handler.savePlaceable(stack, selected, world, player, mop);

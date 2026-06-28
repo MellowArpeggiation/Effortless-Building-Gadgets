@@ -4,9 +4,13 @@ import org.lwjgl.input.Mouse;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
+import cpw.mods.fml.common.gameevent.TickEvent.Phase;
 import net.mellow.effortless.blocks.ConstructionSet;
 import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.buildmode.BaseBuildMode.Operation;
+import net.mellow.effortless.buildmode.ModeOptions.BuildingAction;
+import net.mellow.effortless.buildmode.ModeOptions.BuildingMode;
 import net.mellow.effortless.compat.CompatBaublesExpanded;
 import net.mellow.effortless.items.ItemBuildingGadget;
 import net.mellow.effortless.network.MouseClickPacket;
@@ -16,6 +20,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement;
 import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
@@ -68,26 +73,99 @@ public class ClientEvents {
         if (player == null) return;
 
         int button = Mouse.getEventButton() - 100; // MC mouse button "keyCode"
-        if (!Mouse.getEventButtonState()) return; // only care about mouse down
 
         if (button == mc.gameSettings.keyBindAttack.getKeyCode()) {
-            if (useGadget(mc, player, Operation.BREAK)) event.setCanceled(true);
+            if (Mouse.getEventButtonState()) {
+                if (useGadget(mc, player, Operation.BREAK)) {
+                    keyBindAttackTicks = 1;
+                    event.setCanceled(true);
+                }
+            } else {
+                keyBindAttackTicks = 0;
+            }
         }
+
         if (button == mc.gameSettings.keyBindUseItem.getKeyCode()) {
-            if (useGadget(mc, player, Operation.PLACE)) event.setCanceled(true);
+            if (Mouse.getEventButtonState()) {
+                if (useGadget(mc, player, Operation.PLACE)) {
+                    event.setCanceled(true);
+                }
+            } else {
+                keyBindUseItemTicks = 0;
+            }
         }
+    }
+
+    // static mutable state is fine if we're purely client sided :)
+    private static int keyBindAttackTicks = 0;
+    private static int keyBindUseItemTicks = 0;
+
+    // For repeating clicks
+    // sometimes I worry about the return early pattern I (over-)use, is it good code or bad
+    // I think my nose is too close to this shit
+    @SubscribeEvent
+    public void onClientTick(ClientTickEvent event) {
+        if (event.phase == Phase.END) return;
+
+        if (handleClickRepeat()) {
+            keyBindAttackTicks = 0;
+            keyBindUseItemTicks = 0;
+        }
+    }
+
+    private boolean handleClickRepeat() {
+        if (keyBindAttackTicks == 0 && keyBindUseItemTicks == 0) return false;
+        if (keyBindAttackTicks != 0 && keyBindUseItemTicks != 0) return true;
+
+        Minecraft mc = Minecraft.getMinecraft();
+        EntityPlayer player = mc.thePlayer;
+        MovingObjectPosition mop = mc.objectMouseOver;
+        if (player == null || mop == null || mc.currentScreen != null) return true;
+
+        ItemStack gadgetStack = ItemBuildingGadget.getGadgetStack(player);
+        if (gadgetStack == null) return true;
+
+        ItemStack heldStack = player.getHeldItem();
+        if (heldStack != gadgetStack && !PlaceableStack.isPlaceable(heldStack)) return true;
+
+        BuildingMode mode = ItemBuildingGadget.getMode(gadgetStack);
+        if (mode.handler == null) return true;
+
+        BuildingAction speed = mode.handler.repeatSpeed(gadgetStack);
+        if (speed == null) return true;
+
+        ItemBuildingGadget gadget = (ItemBuildingGadget) gadgetStack.getItem();
+        Operation operation = keyBindAttackTicks > 0 ? Operation.BREAK : Operation.PLACE;
+        int ticks = keyBindAttackTicks > 0 ? keyBindAttackTicks : keyBindUseItemTicks;
+        boolean shouldRepeat = speed == BuildingAction.SPEED_FAST ? ticks % 2 == 0 : ticks % 4 == 0;
+        
+        if (shouldRepeat && gadget.onItemClick(gadgetStack, heldStack, player.worldObj, player, operation)) {
+            float subX = (float)mop.hitVec.xCoord - (float)mop.blockX;
+            float subY = (float)mop.hitVec.yCoord - (float)mop.blockY;
+            float subZ = (float)mop.hitVec.zCoord - (float)mop.blockZ;
+            NetworkHandler.instance.sendToServer(new MouseClickPacket(operation, mop.blockX, mop.blockY, mop.blockZ, mop.sideHit, subX, subY, subZ));
+            player.swingItem();
+        }
+
+        if (keyBindAttackTicks > 0) {
+            keyBindAttackTicks++;
+        } else if (keyBindUseItemTicks > 0) {
+            keyBindUseItemTicks++;
+        }
+
+        return false;
     }
 
     // Return true to cancel mouse event entirely!
     private boolean useGadget(Minecraft mc, EntityPlayer player, Operation operation) {
         MovingObjectPosition mop = mc.objectMouseOver;
-        if (mop == null) return false;
+        if (mop == null || mop.typeOfHit == MovingObjectType.ENTITY) return false;
 
         ItemStack gadgetStack = ItemBuildingGadget.getGadgetStack(player);
-        if (gadgetStack == null) return false;
+        if (gadgetStack == null || ItemBuildingGadget.getMode(gadgetStack).handler == null) return false;
 
         ItemStack heldStack = player.getHeldItem();
-        if (heldStack != gadgetStack && !PlaceableStack.isPlaceable(heldStack)) return false;
+        if (heldStack != gadgetStack && !PlaceableStack.isPlaceable(heldStack) && heldStack != null) return false;
 
         ItemBuildingGadget gadget = (ItemBuildingGadget) gadgetStack.getItem();
 
@@ -123,6 +201,11 @@ public class ClientEvents {
         if (gadget.onItemClick(gadgetStack, heldStack, player.worldObj, player, operation)) {
             NetworkHandler.instance.sendToServer(new MouseClickPacket(operation, x, y, z, side, subX, subY, subZ));
             player.swingItem();
+            if (operation == Operation.PLACE) {
+                keyBindUseItemTicks = 1;
+            } else {
+                keyBindAttackTicks = 1;
+            }
             return true;
         }
 

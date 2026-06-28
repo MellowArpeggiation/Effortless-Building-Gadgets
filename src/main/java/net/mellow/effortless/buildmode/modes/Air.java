@@ -5,6 +5,9 @@ import net.mellow.effortless.blocks.ConstructionSet;
 import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.blocks.Vec3;
 import net.mellow.effortless.buildmode.BaseBuildMode;
+import net.mellow.effortless.buildmode.ModeOptions.BuildingAction;
+import net.mellow.effortless.buildmode.ModeOptions.BuildingOption;
+import net.mellow.effortless.items.ItemBuildingGadget;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
@@ -66,6 +69,11 @@ public class Air extends BaseBuildMode {
     @Override
     public int reach(ItemStack stack) {
         return 6;
+    }
+
+    @Override
+    public BuildingAction repeatSpeed(ItemStack stack) {
+        return ItemBuildingGadget.getAction(stack, BuildingOption.SPEED);
     }
 
     @Override public boolean clear(ItemStack stack) { return false; }

@@ -33,14 +33,12 @@ public interface IItemRenderPreview {
 
             ItemStack held = player.getHeldItem();
 
-            if (held != null) {
-                if (held.getItem() instanceof IItemRenderPreview preview) {
-                    preview.render(world, player, held, event.partialTicks);
-                } else if (held.getItem() instanceof ItemBlock) {
-                    ItemStack gadget = CompatBaublesExpanded.getGadgetFromBaubles(player);
-                    if (gadget != null && PlaceableStack.isPlaceable(held)) {
-                        ((IItemRenderPreview) gadget.getItem()).render(world, player, gadget, event.partialTicks);
-                    }
+            if (held != null && held.getItem() instanceof IItemRenderPreview preview) {
+                preview.render(world, player, held, event.partialTicks);
+            } else if (held == null || held.getItem() instanceof ItemBlock) {
+                ItemStack gadget = CompatBaublesExpanded.getGadgetFromBaubles(player);
+                if (gadget != null && (PlaceableStack.isPlaceable(held) || held == null)) {
+                    ((IItemRenderPreview) gadget.getItem()).render(world, player, gadget, event.partialTicks);
                 }
             }
         }

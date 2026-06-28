@@ -1,8 +1,9 @@
+## Added
+* Fast placement toggle for Extended and Air placement modes
+
 ## Changed
-* Hold crouch to make perfect squares/cubes/circles/etc!
-* Item highlight tooltip now shows number of blocks that will be placed alongside the current placement dimensions
-* Left clicking with the tool now cancels placing without breaking the block you're looking at
+* No longer adds undo history for when nothing changes
 
 ## Fixed
-* High ratio ellipses tend to have holes in them
-* GUI not showing currently selected block when opened
+* Tool intercepts clicks even when disabled in a bauble slot
+* Break mode unavailable for empty hand when in a bauble slot

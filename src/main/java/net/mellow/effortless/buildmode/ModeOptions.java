@@ -9,8 +9,8 @@ public class ModeOptions {
     
     public static enum BuildingMode {
         NONE(null, 0, 16, 0xd4de3b), // disabled
-        EXTENDED(new Extended(), 16, 16, 0xd4de3b), // greater reach
-        AIR(new Air(), 240, 16, 0xd4de3b), // air placement
+        EXTENDED(new Extended(), 16, 16, 0xd4de3b, BuildingOption.SPEED), // greater reach
+        AIR(new Air(), 240, 16, 0xd4de3b, BuildingOption.SPEED), // air placement
         LINE(new Line(), 32, 16, 0x0080ff), // lines
         WALL(new Wall(), 48, 16, 0x0080ff, BuildingOption.FILL), // walls
         FLOOR(new Floor(), 64, 16, 0x0080ff, BuildingOption.FILL), // floors
@@ -63,6 +63,9 @@ public class ModeOptions {
         UNDO(16, 0),
         REDO(32, 0),
 
+        SPEED_NORMAL(0, 32),
+        SPEED_FAST(16, 32),
+
         FULL(32, 32),
         HOLLOW(48, 32),
 
@@ -107,6 +110,8 @@ public class ModeOptions {
     }
 
     public static enum BuildingOption {
+        SPEED(BuildingAction.SPEED_NORMAL, BuildingAction.SPEED_FAST),
+
         FILL(BuildingAction.FULL, BuildingAction.HOLLOW),
         CUBE_FILL(BuildingAction.CUBE_FULL, BuildingAction.CUBE_HOLLOW, BuildingAction.CUBE_SKELETON),
 

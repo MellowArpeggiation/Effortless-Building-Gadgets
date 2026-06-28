@@ -2,6 +2,7 @@ package net.mellow.effortless.buildmode;
 
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.blocks.BlockPos.Dimension;
+import net.mellow.effortless.buildmode.ModeOptions.BuildingAction;
 import net.mellow.effortless.blocks.ConstructionSet;
 import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.blocks.Vec3;
@@ -51,6 +52,11 @@ public abstract class BaseBuildMode {
 
     public int reach(ItemStack stack) {
         return 32;
+    }
+
+    // return null if this action should not auto-repeat
+    public BuildingAction repeatSpeed(ItemStack stack) {
+        return null;
     }
 
     public static BlockPos getFinalPos(EntityPlayer player, BlockPos from, Vec3 pos) {
