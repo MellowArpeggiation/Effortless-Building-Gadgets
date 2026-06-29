@@ -395,6 +395,9 @@ public class GuiBuildingGadget extends GuiScreen {
                 double x = midX + i * btnWidth + i * padding + blockXOffset;
                 double y = midY + blockYOffset;
                 renderItem.renderItemAndEffectIntoGUI(this.fontRendererObj, this.mc.getTextureManager(), block, (int)x + 4, (int)y + 4);
+                
+                // prevent item colour leaking
+                GL11.glColor4d(1, 1, 1, 1);
     
                 if (switchToBlock != null ? block.equals(switchToBlock) : blockNameTimerMs > 0 && block.equals(currentBlock)) {
                     String text = block.getDisplayName();
