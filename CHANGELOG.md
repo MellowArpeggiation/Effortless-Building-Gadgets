@@ -1,2 +1,2 @@
 ## Fixed
-* Rare crash when placing large shapes
+* ArchitectureCraft blocks don't render properly in the gadget GUI

@@ -382,6 +382,8 @@ public class GuiBuildingGadget extends GuiScreen {
         // Draw block selecting icons
         if (!itemless) {
             GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+            this.zLevel = 200.0F;
+            itemRender.zLevel = 200.0F;
             RenderHelper.enableGUIStandardItemLighting();
     
             long thisMs = System.currentTimeMillis();
@@ -392,10 +394,10 @@ public class GuiBuildingGadget extends GuiScreen {
                 ItemStack block = usableBlocks.get(i);
                 double x = midX + i * btnWidth + i * padding + blockXOffset;
                 double y = midY + blockYOffset;
-                renderItem.renderItemIntoGUI(this.fontRendererObj, this.mc.getTextureManager(), block, (int)x + 4, (int)y + 4);
+                renderItem.renderItemAndEffectIntoGUI(this.fontRendererObj, this.mc.getTextureManager(), block, (int)x + 4, (int)y + 4);
     
                 if (switchToBlock != null ? block.equals(switchToBlock) : blockNameTimerMs > 0 && block.equals(currentBlock)) {
-                    String text = I18n.format(block.getItem().getUnlocalizedName(block) + ".name");
+                    String text = block.getDisplayName();
                     int tx = (int) midX - fontRendererObj.getStringWidth(text) / 2;
                     int ty = (int) (midY + blockYOffset + btnWidth + 8);
         
@@ -404,6 +406,8 @@ public class GuiBuildingGadget extends GuiScreen {
             }
     
             RenderHelper.disableStandardItemLighting();
+            this.zLevel = 0.0F;
+            itemRender.zLevel = 0.0F;
             GL11.glDisable(GL12.GL_RESCALE_NORMAL);
     
             if (usableBlocks.isEmpty()) {
