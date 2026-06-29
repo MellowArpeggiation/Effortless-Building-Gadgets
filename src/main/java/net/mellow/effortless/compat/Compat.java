@@ -26,6 +26,32 @@ public class Compat {
         BlockRegistry.addToWhitelist("CarpentersBlocks", "blockCarpentersStairs");
         BlockRegistry.addToWhitelist("CarpentersBlocks", "blockCarpentersTorch");
 
+        // Storage Drawers
+        registerStorageDrawers("StorageDrawers");
+        registerStorageDrawers("StorageDrawersBop");
+        registerStorageDrawers("StorageDrawersForestry");
+        registerStorageDrawers("StorageDrawersNatura");
+        registerStorageDrawers("StorageDrawersErebus");
+        registerStorageDrawers("StorageDrawersMisc");
+
+        // JABBA
+        BlockRegistry.addToLeftClickBlacklist("JABBA", "barrel");
+
+    }
+
+    // Storage Drawers has compat for a loooot of mods, we try to support them all here
+    private static void registerStorageDrawers(String modid) {
+        BlockRegistry.addToLeftClickBlacklist(modid, "fullDrawers1");
+        BlockRegistry.addToLeftClickBlacklist(modid, "fullDrawers2");
+        BlockRegistry.addToLeftClickBlacklist(modid, "fullDrawers4");
+        BlockRegistry.addToLeftClickBlacklist(modid, "halfDrawers2");
+        BlockRegistry.addToLeftClickBlacklist(modid, "halfDrawers4");
+        BlockRegistry.addToLeftClickBlacklist(modid, "compDrawers");
+        BlockRegistry.addToLeftClickBlacklist(modid, "fullCustom1");
+        BlockRegistry.addToLeftClickBlacklist(modid, "fullCustom2");
+        BlockRegistry.addToLeftClickBlacklist(modid, "fullCustom4");
+        BlockRegistry.addToLeftClickBlacklist(modid, "halfCustom2");
+        BlockRegistry.addToLeftClickBlacklist(modid, "halfCustom4");
     }
 
 }

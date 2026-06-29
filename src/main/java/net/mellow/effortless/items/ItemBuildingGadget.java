@@ -124,23 +124,40 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
     public void receiveClick(EntityPlayerMP player, ItemStack gadgetStack, MouseClickPacket packet) {
         ItemStack held = player.getHeldItem();
 
+        BuildingMode mode = getMode(gadgetStack);
+        if (mode.handler == null) return;
+
         // First thing, we need to check for regular interactions with blocks first
-        if (packet.operation == Operation.PLACE) {
-            if (packet.face != 255) { // -1 becomes 255 when parsed as an unsigned byte
-                PlayerInteractEvent event = ForgeEventFactory.onPlayerInteract(player, Action.RIGHT_CLICK_BLOCK, packet.blockX, packet.blockY, packet.blockZ, packet.face, player.worldObj);
-                if (event.isCanceled() || event.useItem == Result.DENY) {
-                    return;
-                }
-
-                Block block = player.worldObj.getBlock(packet.blockX, packet.blockY, packet.blockZ);
-                boolean useBlock = !player.isSneaking() || player.getHeldItem() == null;
-                if (!useBlock) useBlock = player.getHeldItem().getItem().doesSneakBypassUse(player.worldObj, packet.blockX, packet.blockY, packet.blockZ, player);
-
-                if (useBlock) {
-                    if (event.useBlock != Result.DENY) {
-                        if (block.onBlockActivated(player.worldObj, packet.blockX, packet.blockY, packet.blockZ, player, packet.face, packet.subX, packet.subY, packet.subZ)) {
-                            return;
+        if (!mode.handler.isPlacing(gadgetStack)) {
+            if (packet.operation == Operation.PLACE) {
+                if (packet.face == 255) { // -1 becomes 255 when parsed as an unsigned byte
+                    PlayerInteractEvent event = ForgeEventFactory.onPlayerInteract(player, Action.RIGHT_CLICK_AIR, 0, 0, 0, -1, player.worldObj);
+                    if (event.useItem == Result.DENY) { // you would expect this to check cancelling too, but NOPE, the original doesn't!
+                        return;
+                    }
+                } else {
+                    PlayerInteractEvent event = ForgeEventFactory.onPlayerInteract(player, Action.RIGHT_CLICK_BLOCK, packet.blockX, packet.blockY, packet.blockZ, packet.face, player.worldObj);
+                    if (event.isCanceled() || event.useItem == Result.DENY) {
+                        return;
+                    }
+    
+                    Block block = player.worldObj.getBlock(packet.blockX, packet.blockY, packet.blockZ);
+                    boolean useBlock = !player.isSneaking() || player.getHeldItem() == null;
+                    if (!useBlock) useBlock = player.getHeldItem().getItem().doesSneakBypassUse(player.worldObj, packet.blockX, packet.blockY, packet.blockZ, player);
+    
+                    if (useBlock) {
+                        if (event.useBlock != Result.DENY) {
+                            if (block.onBlockActivated(player.worldObj, packet.blockX, packet.blockY, packet.blockZ, player, packet.face, packet.subX, packet.subY, packet.subZ)) {
+                                return;
+                            }
                         }
+                    }
+                }
+            } else {
+                if (packet.face != 255) {
+                    PlayerInteractEvent event = ForgeEventFactory.onPlayerInteract(player, Action.LEFT_CLICK_BLOCK, packet.blockX, packet.blockY, packet.blockZ, packet.face, player.worldObj);
+                    if (event.isCanceled()) { // and THIS one ignores `useBlock`, just regular forge event shittery
+                        return;
                     }
                 }
             }

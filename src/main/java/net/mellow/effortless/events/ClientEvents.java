@@ -6,6 +6,7 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.Phase;
+import net.mellow.effortless.api.BlockRegistry;
 import net.mellow.effortless.blocks.ConstructionSet;
 import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.buildmode.BaseBuildMode.Operation;
@@ -15,6 +16,7 @@ import net.mellow.effortless.compat.CompatBaublesExpanded;
 import net.mellow.effortless.items.ItemBuildingGadget;
 import net.mellow.effortless.network.MouseClickPacket;
 import net.mellow.effortless.network.NetworkHandler;
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -162,7 +164,10 @@ public class ClientEvents {
         if (mop == null || mop.typeOfHit == MovingObjectType.ENTITY) return false;
 
         ItemStack gadgetStack = ItemBuildingGadget.getGadgetStack(player);
-        if (gadgetStack == null || ItemBuildingGadget.getMode(gadgetStack).handler == null) return false;
+        if (gadgetStack == null) return false;
+
+        BuildingMode mode = ItemBuildingGadget.getMode(gadgetStack);
+        if (mode.handler == null) return false;
 
         ItemStack heldStack = player.getHeldItem();
         if (heldStack != gadgetStack && !PlaceableStack.isPlaceable(heldStack) && heldStack != null) return false;
@@ -177,24 +182,40 @@ public class ClientEvents {
         float subY = (float)mop.hitVec.yCoord - (float)mop.blockY;
         float subZ = (float)mop.hitVec.zCoord - (float)mop.blockZ;
 
-        // First, check regular client-side interactions
-        if (operation == Operation.PLACE) {
-            // Check for client side interaction cancels!
-            if (ForgeEventFactory.onPlayerInteract(player, Action.RIGHT_CLICK_BLOCK, x, y, z, side, player.worldObj).isCanceled())
-                return true;
+        mc.playerController.syncCurrentPlayItem();
 
-            mc.playerController.syncCurrentPlayItem();
-
-            if (heldStack != null && heldStack.getItem() != null && heldStack.getItem().onItemUseFirst(heldStack, player, player.worldObj, x, y, z, side, subX, subY, subZ)) {
-                return true;
-            }
-
-            if (!player.isSneaking() || player.getHeldItem() == null || player.getHeldItem().getItem().doesSneakBypassUse(player.worldObj, x, y, z, player)) {
-                // If the client receives a block activation, perform only vanilla behaviour
-                if (player.worldObj.getBlock(mop.blockX, mop.blockY, mop.blockZ).onBlockActivated(player.worldObj, x, y, z, player, side, subX, subY, subZ)) {
-                    mc.playerController.netClientHandler.addToSendQueue(new C08PacketPlayerBlockPlacement(x, y, z, side, player.inventory.getCurrentItem(), subX, subY, subZ));
-                    return true;
+        // First, check regular client-side interactions, unless we're in the middle of a place
+        if (!mode.handler.isPlacing(gadgetStack)) {
+            if (operation == Operation.PLACE) {
+                if (!player.worldObj.isAirBlock(x, y, z)) {
+                    // Check for client side interaction cancels!
+                    if (ForgeEventFactory.onPlayerInteract(player, Action.RIGHT_CLICK_BLOCK, x, y, z, side, player.worldObj).isCanceled()) {
+                        return true;
+                    }
+    
+                    if (heldStack != null && heldStack.getItem() != null && heldStack.getItem().onItemUseFirst(heldStack, player, player.worldObj, x, y, z, side, subX, subY, subZ)) {
+                        return true;
+                    }
+    
+                    if (!player.isSneaking() || player.getHeldItem() == null || player.getHeldItem().getItem().doesSneakBypassUse(player.worldObj, x, y, z, player)) {
+                        // If the client receives a block activation, perform only vanilla behaviour
+                        if (player.worldObj.getBlock(mop.blockX, mop.blockY, mop.blockZ).onBlockActivated(player.worldObj, x, y, z, player, side, subX, subY, subZ)) {
+                            mc.playerController.netClientHandler.addToSendQueue(new C08PacketPlayerBlockPlacement(x, y, z, side, player.inventory.getCurrentItem(), subX, subY, subZ));
+                            return true;
+                        }
+                    }
+                } else {
+                    if (ForgeEventFactory.onPlayerInteract(player, Action.RIGHT_CLICK_AIR, 0, 0, 0, -1, player.worldObj).isCanceled()) {
+                        return true;
+                    }
                 }
+            } else {
+                Block block = player.worldObj.getBlock(x, y, z);
+                if (BlockRegistry.isLeftClickBlacklisted(block)) {
+                    return false;
+                }
+
+                // client side doesn't fire `LEFT_CLICK_BLOCK` (have you figured out yet that forge events are a bit uh...)
             }
         }
         
