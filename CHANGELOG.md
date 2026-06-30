@@ -1,3 +1,7 @@
+## Added
+* Helpful tooltip to indicate what button to click to break/place
+    * This should also help to indicate what mode you started the current placement in
+
 ## Fixed
-* ArchitectureCraft blocks don't render properly in the gadget GUI
-* Left clicking on storage drawers + better barrels ignores the special click handling
+* Air placement indicator is the incorrect colour after breaking a block
+* Colour state leaking in the GUI from tinted blocks like leaves

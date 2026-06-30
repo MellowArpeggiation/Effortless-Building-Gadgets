@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.GL11;
 
 import api.hbm.energymk2.IBatteryItem;
 import baubles.api.BaubleType;
@@ -36,6 +37,8 @@ import net.mellow.effortless.network.MouseClickPacket;
 import net.mellow.effortless.util.MathUtil;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
@@ -113,10 +116,42 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
             BuildingMode mode = getMode(stack);
             if (mode.handler != null) {
                 String overlayOverride = ConstructionSet.getItemHighlight(stack);
-                if (overlayOverride != null) return overlayOverride;
+                if (overlayOverride != null) {
+                    // since there is no event for tool highlights, I'm going to just straight up render the
+                    // intended extra highlights here, since this part of the method can only run on the client anyway
+                    renderExtraTooltip(stack);
+
+                    return overlayOverride;
+                }
             }
         }
         return super.getItemStackDisplayName(stack);
+    }
+
+    @SideOnly(Side.CLIENT)
+    private void renderExtraTooltip(ItemStack stack) {
+        Minecraft mc = Minecraft.getMinecraft();
+        ScaledResolution res = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
+        int width = res.getScaledWidth();
+        int height = res.getScaledHeight();
+
+        int y = height - 59 - mc.fontRenderer.FONT_HEIGHT * 2;
+        if (!mc.playerController.shouldDrawHUD()) y += 14;
+
+        Operation operation = getOperation(stack);
+        String opName = operation.name().toLowerCase();
+        EnumChatFormatting color = operation == Operation.PLACE ? EnumChatFormatting.DARK_AQUA : EnumChatFormatting.RED;
+        String leftOp = color + I18n.format("hint.tooltip.left." + opName) + EnumChatFormatting.RESET;
+        String rightOp = color + I18n.format("hint.tooltip.right." + opName) + EnumChatFormatting.RESET;
+        String hint = I18n.format("hint.tooltip.interaction", leftOp, rightOp);
+
+        GL11.glPushMatrix();
+        GL11.glEnable(GL11.GL_BLEND);
+        OpenGlHelper.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+        int x = (width - mc.fontRenderer.getStringWidth(hint)) / 2;
+        mc.fontRenderer.drawStringWithShadow(hint, x, y, 0xFFFFFFFF);
+        GL11.glDisable(GL11.GL_BLEND);
+        GL11.glPopMatrix();
     }
 
     // Server-side click handling!
@@ -319,7 +354,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         MovingObjectPosition mop = BuildModes.getMop(player, mode.handler.reach(stack));
         if (mop == null) return; // only occurs for NaN
 
-        Operation operation = getOperation(stack);
+        Operation operation = mode.handler.isPlacing(stack) ? getOperation(stack) : Operation.PLACE;
 
         ConstructionSet set = getCachedSet(world, player, stack, mop, mode, operation);
         if (set == null) {

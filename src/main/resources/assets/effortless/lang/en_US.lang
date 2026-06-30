@@ -42,6 +42,11 @@ energy.stored.rf=Energy: %s / %s RF
 energy.stored.he=Power: %s / %s HE
 
 hint.uikey.usage=[ Hold %s to configure ]
+hint.tooltip.interaction=Left-click to %s, Right-click to %s
+hint.tooltip.left.place=cancel
+hint.tooltip.left.break=break
+hint.tooltip.right.place=place
+hint.tooltip.right.break=cancel
 
 item.building_gadget.name=Building Gadget
 item.building_gadget.bauble=Can be placed into a bauble slot
