@@ -1,7 +1,5 @@
 package net.mellow.effortless.buildmode;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -14,7 +12,7 @@ import net.minecraft.entity.player.EntityPlayer;
 
 public class VoxelRenderer {
     
-    public static void renderBlocks(List<BlockPos> blocks, EntityPlayer player, Operation operation, float partialTicks) {
+    public static void renderBlocks(List<BlockPos> blocks, Set<BlockPos> set, EntityPlayer player, Operation operation, float partialTicks) {
         Tessellator tess = Tessellator.instance;
         
         double dx = player.prevPosX + (player.posX - player.prevPosX) * partialTicks;
@@ -36,10 +34,6 @@ public class VoxelRenderer {
             case PLACE: tess.setColorRGBA_F(0.5F, 1.0F, 1.0F, 1.0F); break;
             case BREAK: tess.setColorRGBA_F(1.0F, 0.0F, 0.0F, 1.0F); break;
         }
-        
-        
-        // edge detection is a fucky thing
-        Set<BlockPos> set = new HashSet<>(blocks);
         
         for (BlockPos pos : blocks) {
             boolean px = set.contains(pos.add(1, 0, 0));
@@ -197,12 +191,6 @@ public class VoxelRenderer {
         GL11.glEnable(GL11.GL_TEXTURE_2D);
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glPopMatrix();
-    }
-    
-    public static void renderBlock(BlockPos block, EntityPlayer player, Operation operation, float partialTicks) {
-        List<BlockPos> list = new ArrayList<>();
-        list.add(block);
-        renderBlocks(list, player, operation, partialTicks);
     }
     
 }

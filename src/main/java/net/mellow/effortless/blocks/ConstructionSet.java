@@ -2,6 +2,7 @@ package net.mellow.effortless.blocks;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,7 +27,10 @@ public class ConstructionSet {
     public final BlockPos from;
     public final BlockPos to;
 
+    private final Set<BlockPos> positionSet;
+
     public ConstructionSet(Set<BlockPos> positions, BlockPos start) {
+        this.positionSet = positions;
         this.positions = new ArrayList<>(positions);
         this.start = start;
 
@@ -51,6 +55,8 @@ public class ConstructionSet {
     }
 
     public ConstructionSet(BlockPos pos) {
+        this.positionSet = new HashSet<>();
+        this.positionSet.add(pos);
         this.positions = new ArrayList<>();
         this.positions.add(pos);
         this.start = pos;
@@ -198,7 +204,7 @@ public class ConstructionSet {
     }
 
     public void render(EntityPlayer player, float partialTicks, Operation operation, boolean showHighlight) {
-        VoxelRenderer.renderBlocks(positions, player, operation, partialTicks);
+        VoxelRenderer.renderBlocks(positions, positionSet, player, operation, partialTicks);
         if (showHighlight) updateHighlight(from, to, positions.size());
     }
 
