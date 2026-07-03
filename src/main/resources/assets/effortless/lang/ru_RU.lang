@@ -1,5 +1,7 @@
 buildingaction.undo.name=Отменить
 buildingaction.redo.name=Вернуть
+buildingaction.speed_normal.name=Нормальная скорость
+buildingaction.speed_fast.name=Быстрая скорость
 buildingaction.full.name=Полный
 buildingaction.hollow.name=Кольцо
 buildingaction.cube_full.name=Полный
@@ -9,6 +11,10 @@ buildingaction.short_edge.name=Короткая грань
 buildingaction.long_edge.name=Длинная грань
 buildingaction.circle_start_corner.name=От угла
 buildingaction.circle_start_center.name=От центра
+buildingaction.circle_vertical.name=Вертикально
+buildingaction.circle_horizontal.name=Горизонтально
+buildingaction.line_construct.name=Конструкция
+buildingaction.line_point_to_point.name=От точки к точке
 
 buildingmode.none.name=Отключено
 buildingmode.none.desc=Отключает размещение гаджета
@@ -36,5 +42,11 @@ energy.stored.rf=Энергия: %s / %s RF
 energy.stored.he=Энергия: %s / %s HE
 
 hint.uikey.usage=[ Удерживайте %s, чтобы настроить ]
+hint.tooltip.interaction=ЛКМ, чтобы %s, ПКМ, чтобы %s
+hint.tooltip.left.place=отменить
+hint.tooltip.left.break=сломать
+hint.tooltip.right.place=установить
+hint.tooltip.right.break=отменить
 
 item.building_gadget.name=Строительный гаджет
+item.building_gadget.bauble=Может быть вставлен в слот для брелков
