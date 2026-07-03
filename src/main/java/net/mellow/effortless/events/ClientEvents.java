@@ -1,9 +1,12 @@
 package net.mellow.effortless.events;
 
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent;
+import cpw.mods.fml.common.gameevent.InputEvent.MouseInputEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.Phase;
 import net.mellow.effortless.api.BlockRegistry;
@@ -23,7 +26,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
-import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.common.MinecraftForge;
@@ -63,34 +65,40 @@ public class ClientEvents {
         ItemBuildingGadget.isRenderingOverlay = false;
     }
 
-    // OF COURSE THERE IS NO EQUIVALENT FOR CANCELLING KEYBOARD EVENTS THAT WOULD BE TOO USEFUL AND CONSISTENT
-    // FUCKING HELL FORGE STOP FINDING ME IN THE ALPS
-    // okay fine, when I implement the regular behaviour, I'll just find a workaround that works for both keyboard and mouse
-    // will probably need to use AT and drink the fluids from my spine
     @SubscribeEvent
-    public void onMouseEvent(MouseEvent event) {
+    public void onMouseInput(MouseInputEvent event) {
+        handleKeybind(Mouse.getEventButton() - 100, Mouse.getEventButtonState());
+    }
+
+    @SubscribeEvent
+    public void onKeyInput(KeyInputEvent event) {
+        handleKeybind(Keyboard.getEventKey(), Keyboard.getEventKeyState());
+    }
+
+    // i made an okay-ish workaround
+    // sorry forge ily you can drink my final spluids
+    private void handleKeybind(int keyCode, boolean pressed) {
         Minecraft mc = Minecraft.getMinecraft();
         EntityPlayer player = mc.thePlayer;
 
         if (player == null) return;
 
-        int button = Mouse.getEventButton() - 100; // MC mouse button "keyCode"
-
-        if (button == mc.gameSettings.keyBindAttack.getKeyCode()) {
-            if (Mouse.getEventButtonState()) {
+        if (keyCode == mc.gameSettings.keyBindAttack.getKeyCode()) {
+            if (pressed) {
                 if (useGadget(mc, player, Operation.BREAK)) {
-                    keyBindAttackTicks = 1;
-                    event.setCanceled(true);
+                    mc.gameSettings.keyBindAttack.pressTime = 0;
+                    mc.gameSettings.keyBindAttack.pressed = false;
                 }
             } else {
                 keyBindAttackTicks = 0;
             }
         }
 
-        if (button == mc.gameSettings.keyBindUseItem.getKeyCode()) {
-            if (Mouse.getEventButtonState()) {
+        if (keyCode == mc.gameSettings.keyBindUseItem.getKeyCode()) {
+            if (pressed) {
                 if (useGadget(mc, player, Operation.PLACE)) {
-                    event.setCanceled(true);
+                    mc.gameSettings.keyBindUseItem.pressTime = 0;
+                    mc.gameSettings.keyBindUseItem.pressed = false;
                 }
             } else {
                 keyBindUseItemTicks = 0;
@@ -115,6 +123,7 @@ public class ClientEvents {
         }
     }
 
+    // Returns true to cancel click repeating
     private boolean handleClickRepeat() {
         if (keyBindAttackTicks == 0 && keyBindUseItemTicks == 0) return false;
         if (keyBindAttackTicks != 0 && keyBindUseItemTicks != 0) return true;
