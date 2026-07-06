@@ -13,8 +13,8 @@ import net.mellow.effortless.blocks.PlaceableStack;
 import net.mellow.effortless.compat.CompatBaublesExpanded;
 import net.mellow.effortless.items.IItemGuiProvider;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 
@@ -33,11 +33,13 @@ public class Keybinds {
     // some mods are a bit funky with regular keybind handling when you require the user to hold a key...
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
-    public void postClientTick(ClientTickEvent event) {
-        if (event.phase != Phase.END) return;
+    public void preClientTick(ClientTickEvent event) {
+        if (event.phase == Phase.END) return;
 
-        if (uiKey.getIsKeyPressed()) {
-            EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
+        Minecraft mc = Minecraft.getMinecraft();
+
+        if (mc.currentScreen == null && Keyboard.isKeyDown(Keybinds.uiKey.getKeyCode())) {
+            EntityPlayer player = mc.thePlayer;
 
             ItemStack held = player.getHeldItem();
             if (held != null && held.getItem() instanceof IItemGuiProvider provider) {

@@ -4,6 +4,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent;
 import cpw.mods.fml.common.gameevent.InputEvent.MouseInputEvent;
@@ -66,12 +67,13 @@ public class ClientEvents {
         ItemBuildingGadget.isRenderingOverlay = false;
     }
 
-    @SubscribeEvent
+    // lowest priority to unfuck the hotkey layering unfucking performed by NTM
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onMouseInput(MouseInputEvent event) {
         handleKeybind(Mouse.getEventButton() - 100, Mouse.getEventButtonState());
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onKeyInput(KeyInputEvent event) {
         handleKeybind(Keyboard.getEventKey(), Keyboard.getEventKeyState());
     }
