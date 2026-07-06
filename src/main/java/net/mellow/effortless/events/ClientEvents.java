@@ -54,7 +54,8 @@ public class ClientEvents {
         ItemStack gadget = CompatBaublesExpanded.getGadgetFromBaubles(player);
         if (gadget == null) return;
 
-        if (!PlaceableStack.isPlaceable(player.getHeldItem())) return;
+        ItemStack held = player.getHeldItem();
+        if (held != null && !PlaceableStack.isPlaceable(held)) return;
 
         mc.ingameGUI.highlightingItemStack = gadget;
     }
