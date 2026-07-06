@@ -63,6 +63,9 @@ public class ModeOptions {
         UNDO(16, 0),
         REDO(32, 0),
 
+        EMPTY_BREAK(192, 0),
+        EMPTY_NOBREAK(208, 0),
+
         SPEED_NORMAL(0, 32),
         SPEED_FAST(16, 32),
 
@@ -100,16 +103,12 @@ public class ModeOptions {
         public String getUnlocalizedDesc() {
             return "buildingaction." + name().toLowerCase(Locale.ROOT) + ".desc";
         }
-
-        public static BuildingAction[] getGlobalActions() {
-            return new BuildingAction[] {
-                UNDO,
-                REDO,
-            };
-        }
     }
 
     public static enum BuildingOption {
+        ACTIONS(BuildingAction.UNDO, BuildingAction.REDO),
+        EMPTY_HAND(BuildingAction.EMPTY_BREAK, BuildingAction.EMPTY_NOBREAK),
+
         SPEED(BuildingAction.SPEED_NORMAL, BuildingAction.SPEED_FAST),
 
         FILL(BuildingAction.FULL, BuildingAction.HOLLOW),

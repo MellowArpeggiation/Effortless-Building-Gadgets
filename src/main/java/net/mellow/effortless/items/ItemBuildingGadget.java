@@ -303,6 +303,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
             try {
                 map.put(option, BuildingAction.valueOf(stack.stackTagCompound.getString(option.name())));
             } catch (IllegalArgumentException ex) {
+                stack.stackTagCompound.setString(option.name(), option.actions[0].name());
                 map.put(option, option.actions[0]);
             }
         }
@@ -326,6 +327,10 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         } catch (IllegalArgumentException ex) {
             return Operation.PLACE;
         }
+    }
+
+    public static boolean canBreakWithHeld(ItemStack gadget, ItemStack held) {
+        return PlaceableStack.isPlaceable(held) || (held == null && ItemBuildingGadget.getAction(gadget, BuildingOption.EMPTY_HAND) == BuildingAction.EMPTY_BREAK);
     }
 
     private ConstructionSet lastRendered;
@@ -366,7 +371,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
 
     @Override
     public void provideGui(ItemStack stack, EntityPlayer player, ItemStack held) {
-        FMLCommonHandler.instance().showGuiScreen(new GuiBuildingGadget(stack, stack != held));
+        FMLCommonHandler.instance().showGuiScreen(new GuiBuildingGadget(stack, stack != held, held != null));
     }
 
     @Override
@@ -392,6 +397,8 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
             switch (action) {
                 case "UNDO": History.undo(player.worldObj, player); break;
                 case "REDO": History.redo(player.worldObj, player); break;
+                case "EMPTY_BREAK": stack.stackTagCompound.setString(BuildingOption.EMPTY_HAND.name(), BuildingAction.EMPTY_NOBREAK.name()); break;
+                case "EMPTY_NOBREAK": stack.stackTagCompound.setString(BuildingOption.EMPTY_HAND.name(), BuildingAction.EMPTY_BREAK.name()); break;
             }
         }
 

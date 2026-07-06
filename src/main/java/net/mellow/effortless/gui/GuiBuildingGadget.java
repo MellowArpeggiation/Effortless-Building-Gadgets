@@ -39,6 +39,7 @@ public class GuiBuildingGadget extends GuiScreen {
 
     private ItemStack gadget;
     private boolean itemless;
+    private boolean holding;
 
     private BuildingMode currentMode;
     private ItemStack currentBlock;
@@ -57,13 +58,10 @@ public class GuiBuildingGadget extends GuiScreen {
     private long blockNameTimerMs;
     private long lastMs;
 
-    public GuiBuildingGadget(ItemStack stack) {
+    public GuiBuildingGadget(ItemStack stack, boolean itemless, boolean holding) {
         this.gadget = stack;
-    }
-
-    public GuiBuildingGadget(ItemStack stack, boolean itemless) {
-        this(stack);
         this.itemless = itemless;
+        this.holding = holding;
     }
 
     @Override
@@ -150,8 +148,9 @@ public class GuiBuildingGadget extends GuiScreen {
         Tessellator tessellator = Tessellator.instance;
 
         BuildingMode[] modes = itemless ? BuildingMode.getItemlessModes() : BuildingMode.getRegularModes();
-        BuildingAction[] actions = BuildingAction.getGlobalActions();
+        BuildingAction[] actions = BuildingOption.ACTIONS.actions;
         BuildingOption[] options = currentMode.options;
+        BuildingAction breakMode = currentOptions.get(BuildingOption.EMPTY_HAND);
 
         double midX = width / 2;
         double midY = height / 2;
@@ -271,11 +270,14 @@ public class GuiBuildingGadget extends GuiScreen {
 
 
         // Draw action buttons
+        int actionStart = 0;
+        if (!holding) actionStart--;
+
         double actionXOffset = -100 - (actions.length * btnWidth + (actions.length - 1) * padding); // right aligned
         double actionYOffset = -(btnWidth / 2);
 
-        for (int i = 0; i < actions.length; i++) {
-            BuildingAction action = actions[i];
+        for (int i = actionStart; i < actions.length; i++) {
+            BuildingAction action = i < 0 ? breakMode : actions[i];
 
             double x1 = midX + i * btnWidth + i * padding + actionXOffset;
             double x2 = x1 + btnWidth;
@@ -426,8 +428,8 @@ public class GuiBuildingGadget extends GuiScreen {
 
 
         // Draw action button icons
-        for (int i = 0; i < actions.length; i++) {
-            BuildingAction action = actions[i];
+        for (int i = actionStart; i < actions.length; i++) {
+            BuildingAction action = i < 0 ? breakMode : actions[i];
             double x = midX + i * btnWidth + i * padding + actionXOffset;
             double y = midY + actionYOffset;
 
@@ -508,6 +510,12 @@ public class GuiBuildingGadget extends GuiScreen {
             data.setString("action", performAction.name());
 
             NetworkHandler.instance.sendToServer(new NBTControlPacket(data));
+
+            if (performAction == BuildingAction.EMPTY_BREAK) {
+                currentOptions.put(BuildingOption.EMPTY_HAND, BuildingAction.EMPTY_NOBREAK);
+            } else if (performAction == BuildingAction.EMPTY_NOBREAK) {
+                currentOptions.put(BuildingOption.EMPTY_HAND, BuildingAction.EMPTY_BREAK);
+            }
 
             performedAction = true;
         }

@@ -140,7 +140,7 @@ public class ClientEvents {
         if (gadgetStack == null) return true;
 
         ItemStack heldStack = player.getHeldItem();
-        if (heldStack != gadgetStack && !PlaceableStack.isPlaceable(heldStack)) return true;
+        if (heldStack != gadgetStack && !ItemBuildingGadget.canBreakWithHeld(gadgetStack, heldStack)) return true;
 
         BuildingMode mode = ItemBuildingGadget.getMode(gadgetStack);
         if (mode.handler == null) return true;
@@ -182,7 +182,7 @@ public class ClientEvents {
         if (mode.handler == null) return false;
 
         ItemStack heldStack = player.getHeldItem();
-        if (heldStack != gadgetStack && !PlaceableStack.isPlaceable(heldStack) && heldStack != null) return false;
+        if (heldStack != gadgetStack && !ItemBuildingGadget.canBreakWithHeld(gadgetStack, heldStack)) return false;
 
         ItemBuildingGadget gadget = (ItemBuildingGadget) gadgetStack.getItem();
 

@@ -1,5 +1,6 @@
 ## Added
 * Support for more decorative blocks from Primal
+* Option to disable block breaking with an empty hand (only applicable to bauble usage)
 
 ## Changed
 * Updated Russian localization
