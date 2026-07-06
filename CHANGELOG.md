@@ -1,7 +1,8 @@
 ## Added
-* Helpful tooltip to indicate what button to click to break/place
-    * This should also help to indicate what mode you started the current placement in
+* Support for more decorative blocks from Primal
+
+## Changed
+* Updated Russian localization
 
 ## Fixed
-* Air placement indicator is the incorrect colour after breaking a block
-* Colour state leaking in the GUI from tinted blocks like leaves
+* Tool doesn't work with break/place keybinds set to keyboard keys instead of mouse buttons

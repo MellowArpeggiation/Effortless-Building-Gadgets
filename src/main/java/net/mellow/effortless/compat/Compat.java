@@ -26,6 +26,16 @@ public class Compat {
         BlockRegistry.addToWhitelist("CarpentersBlocks", "blockCarpentersStairs");
         BlockRegistry.addToWhitelist("CarpentersBlocks", "blockCarpentersTorch");
 
+        // Primal
+        BlockRegistry.addToWhitelist("primal", "stone_slab");
+        BlockRegistry.addToWhitelist("primal", "double_stone_slab");
+        BlockRegistry.addToWhitelist("primal", "vertical_stone_slab");
+        BlockRegistry.addToWhitelist("primal", "double_vertical_stone_slab");
+        BlockRegistry.addToWhitelist("primal", "stone_stairs");
+        BlockRegistry.addToWhitelist("primal", "stone_wall");
+        BlockRegistry.addToWhitelist("primal", "stone_pressure_plate");
+        BlockRegistry.addToWhitelist("primal", "stone_button");
+
         // Storage Drawers
         registerStorageDrawers("StorageDrawers");
         registerStorageDrawers("StorageDrawersBop");
