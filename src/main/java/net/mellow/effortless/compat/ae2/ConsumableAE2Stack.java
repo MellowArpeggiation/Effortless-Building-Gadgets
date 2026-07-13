@@ -57,7 +57,7 @@ public class ConsumableAE2Stack implements IConsumableStack {
     public static IConsumableStack getStack(EntityPlayer player, ItemStack stack, int maximumToPlace) {
         WirelessTerminalGuiObject terminal = CompatAE2.getTerminalGuiObject(player);
         if (terminal == null || !terminal.rangeCheck()) return null;
-        if (!CompatAE2.hasRequiredPermission(player, terminal.getGrid(), SecurityPermissions.EXTRACT)) return null;
+        if (!CompatAE2.hasRequiredPermission(player, terminal, SecurityPermissions.EXTRACT)) return null;
         
         IMEMonitor<IAEItemStack> inventory = terminal.getItemInventory();
         if (inventory == null) return null;

@@ -4,7 +4,7 @@ import appeng.api.AEApi;
 import appeng.api.config.SecurityPermissions;
 import appeng.api.features.IWirelessTermHandler;
 import appeng.api.features.IWirelessTermRegistry;
-import appeng.api.networking.IGrid;
+import appeng.api.networking.IGridNode;
 import appeng.api.networking.security.ISecurityGrid;
 import appeng.helpers.WirelessTerminalGuiObject;
 import baubles.api.BaublesApi;
@@ -64,8 +64,10 @@ public class CompatAE2 {
     }    
 
     @Optional.Method(modid = Compat.MODID_AE2)
-    public static boolean hasRequiredPermission(EntityPlayer player, IGrid gridNode, SecurityPermissions requiredPermission) {
-        ISecurityGrid grid = gridNode.getCache(ISecurityGrid.class);
+    public static boolean hasRequiredPermission(EntityPlayer player, WirelessTerminalGuiObject terminal, SecurityPermissions requiredPermission) {
+        IGridNode gridNode = terminal.getActionableNode();
+        if (gridNode == null) return false;
+        ISecurityGrid grid = gridNode.getGrid().getCache(ISecurityGrid.class);
         return grid.hasPermission(player, requiredPermission);
     }
 
