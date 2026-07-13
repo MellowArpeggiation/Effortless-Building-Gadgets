@@ -19,6 +19,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.world.BlockEvent;
 
 public class ConstructionSet {
     
@@ -95,6 +97,10 @@ public class ConstructionSet {
 
             if (!world.checkNoEntityCollision(bb)) continue;
 
+            BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(pos.x, pos.y, pos.z, world, block, meta, player);
+            MinecraftForge.EVENT_BUS.post(event);
+            if (event.isCanceled()) continue;
+
             if (useItems) {
                 if (toDeplete == null) {
                     toDeplete = IConsumableStack.getMatchingStack(player, selected, positions.size() - blocksPlaced);
@@ -165,6 +171,11 @@ public class ConstructionSet {
 
             if (block.isAir(world, pos.x, pos.y, pos.z)) continue;
             if (!PlaceableStack.isPlaceable(block, meta)) continue; // only break blocks we're allowed to
+
+            BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(pos.x, pos.y, pos.z, world, block, meta, player);
+            MinecraftForge.EVENT_BUS.post(event);
+            if (event.isCanceled()) continue;
+
             PlaceableStack placed = placeMap.get(pos);
 
             if (useItems) {
