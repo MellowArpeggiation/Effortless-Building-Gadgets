@@ -5,14 +5,21 @@ import java.util.Set;
 
 import org.lwjgl.opengl.GL11;
 
+import net.mellow.effortless.Effortless;
 import net.mellow.effortless.blocks.BlockPos;
 import net.mellow.effortless.buildmode.BaseBuildMode.Operation;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ResourceLocation;
 
 public class VoxelRenderer {
+
+    private static final ResourceLocation EMPTY = new ResourceLocation(Effortless.MODID, "textures/pixel_white.png");
     
     public static void renderBlocks(List<BlockPos> blocks, Set<BlockPos> set, EntityPlayer player, Operation operation, float partialTicks) {
+        Minecraft mc = Minecraft.getMinecraft();
         Tessellator tess = Tessellator.instance;
         
         double dx = player.prevPosX + (player.posX - player.prevPosX) * partialTicks;
@@ -22,6 +29,8 @@ public class VoxelRenderer {
         GL11.glPushMatrix();
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glDisable(GL11.GL_TEXTURE_2D);
+        mc.renderEngine.bindTexture(EMPTY);
+        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
         GL11.glColor3f(1F, 1F, 1F);
         GL11.glLineWidth(2.0F);
         GL11.glDepthMask(false);
@@ -188,6 +197,7 @@ public class VoxelRenderer {
         tess.setTranslation(0, 0, 0);
         
         GL11.glDepthMask(true);
+        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, OpenGlHelper.lastBrightnessX, OpenGlHelper.lastBrightnessY);
         GL11.glEnable(GL11.GL_TEXTURE_2D);
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glPopMatrix();
