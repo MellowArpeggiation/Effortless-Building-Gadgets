@@ -34,7 +34,7 @@ import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 
 public class ClientEvents {
-    
+
     public static void init() {
         ClientEvents handler = new ClientEvents();
         MinecraftForge.EVENT_BUS.register(handler);
@@ -152,7 +152,7 @@ public class ClientEvents {
         Operation operation = keyBindAttackTicks > 0 ? Operation.BREAK : Operation.PLACE;
         int ticks = keyBindAttackTicks > 0 ? keyBindAttackTicks : keyBindUseItemTicks;
         boolean shouldRepeat = speed == BuildingAction.SPEED_FAST ? ticks % 2 == 0 : ticks % 4 == 0;
-        
+
         if (shouldRepeat && gadget.onItemClick(gadgetStack, heldStack, player.worldObj, player, operation)) {
             float subX = (float)mop.hitVec.xCoord - (float)mop.blockX;
             float subY = (float)mop.hitVec.yCoord - (float)mop.blockY;
@@ -204,11 +204,11 @@ public class ClientEvents {
                     if (ForgeEventFactory.onPlayerInteract(player, Action.RIGHT_CLICK_BLOCK, x, y, z, side, player.worldObj).isCanceled()) {
                         return true;
                     }
-    
+
                     if (heldStack != null && heldStack.getItem() != null && heldStack.getItem().onItemUseFirst(heldStack, player, player.worldObj, x, y, z, side, subX, subY, subZ)) {
                         return true;
                     }
-    
+
                     if (!player.isSneaking() || player.getHeldItem() == null || player.getHeldItem().getItem().doesSneakBypassUse(player.worldObj, x, y, z, player)) {
                         // If the client receives a block activation, perform only vanilla behaviour
                         if (player.worldObj.getBlock(mop.blockX, mop.blockY, mop.blockZ).onBlockActivated(player.worldObj, x, y, z, player, side, subX, subY, subZ)) {
@@ -230,7 +230,7 @@ public class ClientEvents {
                 // client side doesn't fire `LEFT_CLICK_BLOCK` (have you figured out yet that forge events are a bit uh...)
             }
         }
-        
+
         if (gadget.onItemClick(gadgetStack, heldStack, player.worldObj, player, operation)) {
             NetworkHandler.instance.sendToServer(new MouseClickPacket(operation, x, y, z, side, subX, subY, subZ));
             player.swingItem();

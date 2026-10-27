@@ -39,6 +39,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
@@ -49,6 +50,7 @@ import net.minecraft.item.ItemFlintAndSteel;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IIcon;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 import net.minecraftforge.event.ForgeEventFactory;
@@ -82,7 +84,6 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
     public ItemBuildingGadget() {
         this.setCreativeTab(CreativeTabs.tabTools);
         this.setMaxStackSize(1);
-        this.setFull3D();
     }
 
     public static ItemStack getGadgetStack(EntityPlayer player) {
@@ -95,8 +96,9 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
     @Override
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean bool) {
-        if (Config.consumesEnergy) {
-            EnumChatFormatting chargeFormat = getEnergyStored(stack) >= Config.capacityRF / 10 ? EnumChatFormatting.BLUE : EnumChatFormatting.RED;
+        if (Config.consumesEnergy && !player.capabilities.isCreativeMode && (hasRF || hasHE)) {
+            boolean hasCharge = getEnergyStored(stack) >= getMaxEnergyStored(stack) / 10;
+            EnumChatFormatting chargeFormat = hasCharge ? EnumChatFormatting.BLUE : EnumChatFormatting.RED;
             if (hasRF) list.add(chargeFormat + I18n.format("energy.stored.rf", MathUtil.getShortNumber(getEnergyStored(stack)), MathUtil.getShortNumber(getMaxEnergyStored(stack))));
             if (hasHE) list.add(chargeFormat + I18n.format("energy.stored.he", MathUtil.getShortNumber(getCharge(stack)), MathUtil.getShortNumber(getMaxCharge(stack))));
         }
@@ -154,6 +156,25 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         GL11.glPopMatrix();
     }
 
+    @SideOnly(Side.CLIENT) protected IIcon iconOff;
+    @SideOnly(Side.CLIENT) protected IIcon iconActive; // trigger pressed icon
+
+
+    @SideOnly(Side.CLIENT)
+    public void registerIcons(IIconRegister register) {
+        super.registerIcons(register);
+        iconOff = register.registerIcon(getIconString() + "_off");
+        iconActive = register.registerIcon(getIconString() + "_active");
+    }
+
+    // Item meta is set client side when durability is checked
+    @SideOnly(Side.CLIENT)
+    public IIcon getIconFromDamage(int meta) {
+        if (meta == 1) return itemIcon;
+        if (meta == 2) return iconActive;
+        return iconOff;
+    }
+
     // Server-side click handling!
     @Override
     public void receiveClick(EntityPlayerMP player, ItemStack gadgetStack, MouseClickPacket packet) {
@@ -175,11 +196,11 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
                     if (event.isCanceled() || event.useItem == Result.DENY) {
                         return;
                     }
-    
+
                     Block block = player.worldObj.getBlock(packet.blockX, packet.blockY, packet.blockZ);
                     boolean useBlock = !player.isSneaking() || player.getHeldItem() == null;
                     if (!useBlock) useBlock = player.getHeldItem().getItem().doesSneakBypassUse(player.worldObj, packet.blockX, packet.blockY, packet.blockZ, player);
-    
+
                     if (useBlock) {
                         if (event.useBlock != Result.DENY) {
                             if (block.onBlockActivated(player.worldObj, packet.blockX, packet.blockY, packet.blockZ, player, packet.face, packet.subX, packet.subY, packet.subZ)) {
@@ -213,6 +234,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         // Clicking the other mouse button cancels whatever operation we're doing
         if (mode.handler.isPlacing(stack) && getOperation(stack) != operation) {
             mode.handler.clear(stack);
+            stack.setItemDamage(1);
             return true;
         }
 
@@ -226,6 +248,8 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
             if (energy < Config.capacityRF / 10) return false;
         }
 
+        stack.setItemDamage(2);
+
         MovingObjectPosition mop = BuildModes.getMop(player, mode.handler.reach(stack));
         if (mop == null) return false; // only occurs on NaN
 
@@ -235,7 +259,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
             if (held == null) return false;
             mode.handler.savePlaceable(stack, selected, world, player, mop);
         }
-        
+
         // attempt to commit blocks to world if true, can still be cancelled if the set doesn't resolve
         if (mode.handler.click(stack, world, player, mop, operation)) {
             ConstructionSet set = mode.handler.getBlocks(stack, world, player, mop, operation);
@@ -244,17 +268,19 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
             mode.handler.clear(stack);
             int blocksModified = 0;
 
+            stack.setItemDamage(1);
+
             if (operation == Operation.PLACE) {
                 PlaceableStack placed = mode.handler.getPlaceable(stack);
                 if (placed == null) return true;
-    
+
                 blocksModified = set.build(world, player, placed, false);
             } else {
                 blocksModified = set.destroy(world, player);
             }
 
             if (requiresPower) {
-                stack.stackTagCompound.setInteger("energy", Math.max(0, energy - blocksModified * Config.consumptionRF));
+                setEnergy(stack, energy - blocksModified * Config.consumptionRF);
             }
         }
 
@@ -266,9 +292,27 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         return false;
     }
 
+    protected void setEnergy(ItemStack stack, int energy) {
+        stack.stackTagCompound.setInteger("energy", energy);
+
+        boolean requiresPower = Config.consumesEnergy && (hasRF || hasHE);
+        if (!requiresPower) return;
+        if (stack.getItemDamage() == 2) return;
+
+        if (energy > Config.capacityRF / 10) {
+            stack.setItemDamage(1);
+        } else {
+            stack.setItemDamage(0);
+        }
+    }
+
 
     @Override
     public boolean showDurabilityBar(ItemStack stack) {
+        Minecraft mc = Minecraft.getMinecraft();
+        EntityPlayer player = mc.thePlayer;
+        if (player.capabilities.isCreativeMode) return false;
+
         return Config.consumesEnergy && (hasRF || hasHE) && getEnergyStored(stack) < getMaxEnergyStored(stack);
     }
 
@@ -415,7 +459,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
 
         if (!simulate) {
             energy += energyReceived;
-            stack.stackTagCompound.setInteger("energy", energy);
+            setEnergy(stack, energy);
         }
 
         return energyReceived;
@@ -445,13 +489,13 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         if (stack.stackTagCompound == null) stack.stackTagCompound = new NBTTagCompound();
         int energy = stack.stackTagCompound.getInteger("energy");
         energy += Math.max(1, Math.round(power / Config.conversionHEtoRF));
-        stack.stackTagCompound.setInteger("energy", energy);
+        setEnergy(stack, energy);
     }
 
     @Override
     public void setCharge(ItemStack stack, long power) {
         if (stack.stackTagCompound == null) stack.stackTagCompound = new NBTTagCompound();
-        stack.stackTagCompound.setInteger("energy", Math.round(power / Config.conversionHEtoRF));
+        setEnergy(stack, Math.round(power / Config.conversionHEtoRF));
     }
 
     @Override
