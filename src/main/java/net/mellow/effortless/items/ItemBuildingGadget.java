@@ -307,6 +307,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
     }
 
 
+    @SideOnly(Side.CLIENT)
     @Override
     public boolean showDurabilityBar(ItemStack stack) {
         Minecraft mc = Minecraft.getMinecraft();
@@ -316,6 +317,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         return Config.consumesEnergy && (hasRF || hasHE) && getEnergyStored(stack) < getMaxEnergyStored(stack);
     }
 
+    @SideOnly(Side.CLIENT)
     @Override
     public double getDurabilityForDisplay(ItemStack stack) {
         return 1 - (double) getEnergyStored(stack) / (double) getMaxEnergyStored(stack);
