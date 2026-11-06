@@ -28,14 +28,17 @@ public abstract class BaseBuildMode {
     public abstract ConstructionSet getBlocks(ItemStack stack, World world, EntityPlayer player, MovingObjectPosition mop, Operation operation);
 
     // put the placeable somewhere safe, will retrieve it upon finishing
-    public void savePlaceable(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop) {
-        if (isPlacing(stack)) return; // only on first click
+    public boolean savePlaceable(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop) {
+        if (isPlacing(stack)) return true; // only on first click
 
         BlockPos from = BlockPos.fromRaycastReplaceable(world, mop);
-        if (from == null) return;
+        if (from == null) return false;
+
         PlaceableStack place = PlaceableStack.getPlaceableStack(selected, world, player, from.x, from.y, from.z, mop.sideHit, new Vec3(mop.hitVec));
+        if (place == null) return false;
 
         stack.stackTagCompound.setTag("place", place.save());
+        return true;
     }
 
     public PlaceableStack getPlaceable(ItemStack stack) {

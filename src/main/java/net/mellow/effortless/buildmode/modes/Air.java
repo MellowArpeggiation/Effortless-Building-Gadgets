@@ -34,8 +34,8 @@ public class Air extends BaseBuildMode {
 
         return new ConstructionSet(pos);
     }
-    
-    public void savePlaceable(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop) {
+
+    public boolean savePlaceable(ItemStack stack, ItemStack selected, World world, EntityPlayer player, MovingObjectPosition mop) {
         if (mop.typeOfHit == MovingObjectType.MISS) {
             BlockPos pos = new BlockPos(mop.blockX, mop.blockY, mop.blockZ);
 
@@ -55,15 +55,19 @@ public class Air extends BaseBuildMode {
             }
 
             PlaceableStack place = PlaceableStack.getPlaceableStack(selected, world, player, pos.x, pos.y, pos.z, facing.ordinal(), new Vec3(mop.hitVec));
-            
+            if (place == null) return false;
+
             stack.stackTagCompound.setTag("place", place.save());
         } else {
             BlockPos pos = BlockPos.fromRaycastSide(mop);
 
             PlaceableStack place = PlaceableStack.getPlaceableStack(selected, world, player, pos.x, pos.y, pos.z, mop.sideHit, new Vec3(mop.hitVec));
+            if (place == null) return false;
 
             stack.stackTagCompound.setTag("place", place.save());
         }
+
+        return true;
     }
 
     @Override
@@ -79,5 +83,5 @@ public class Air extends BaseBuildMode {
     @Override public boolean clear(ItemStack stack) { return false; }
     @Override public boolean isPlacing(ItemStack stack) { return false; }
     @Override public boolean showHighlight(ItemStack stack) { return false; }
-    
+
 }

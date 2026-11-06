@@ -6,6 +6,7 @@ import net.minecraft.block.Block.SoundType;
 import net.minecraft.block.BlockBed;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemSlab;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -14,7 +15,7 @@ import net.minecraft.world.World;
 public class PlaceableStack {
 
     // Stores an item stack _and_ how it should be placed into the world
-    
+
     public final ItemStack stack;
     public final BlockMeta place;
     public final NBTTagCompound nbt;
@@ -83,11 +84,22 @@ public class PlaceableStack {
         ItemBlock placingItem = (ItemBlock) selected.getItem();
 
         BlockMeta was = new BlockMeta(world.getBlock(x, y, z), world.getBlockMetadata(x, y, z));
+
+        // ensure the block we're test placing into is actually replaceable to prevent weirdness
+        if (!was.block.isReplaceable(world, x, y, z)) return null;
+
         int wasSize = selected.stackSize;
         SoundType wasSound = placingItem.field_150939_a.stepSound;
 
+        // treat slabs like they not slabs so they don't get all fucked up
+        boolean wasSlab = false;
+        if (placingItem instanceof ItemSlab slab) {
+            wasSlab = slab.field_150948_b;
+            slab.field_150948_b = true;
+        }
+
         // Fake placement by real player to correctly fetch all block data
-        placingItem.field_150939_a.stepSound = SILENT_BLOCK;
+        placingItem.field_150939_a.stepSound = SILENT_BLOCK; // quiet down
         placingItem.onItemUse(selected, player, world, x, y, z, side, subX, subY, subZ);
 
         // get meta (and TE for blocks with extended data)
@@ -109,6 +121,10 @@ public class PlaceableStack {
         selected.stackSize = wasSize;
         placingItem.field_150939_a.stepSound = wasSound;
         world.setBlock(x, y, z, was.block, was.meta, 2);
+
+        if (placingItem instanceof ItemSlab slab) {
+            slab.field_150948_b = wasSlab;
+        }
 
         PlaceableStack stack = new PlaceableStack(selected, placingItem.field_150939_a, meta, nbt);
 

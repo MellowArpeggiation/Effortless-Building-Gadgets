@@ -160,6 +160,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
     @SideOnly(Side.CLIENT) protected IIcon iconActive; // trigger pressed icon
 
 
+    @Override
     @SideOnly(Side.CLIENT)
     public void registerIcons(IIconRegister register) {
         super.registerIcons(register);
@@ -168,6 +169,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
     }
 
     // Item meta is set client side when durability is checked
+    @Override
     @SideOnly(Side.CLIENT)
     public IIcon getIconFromDamage(int meta) {
         if (meta == 1) return itemIcon;
@@ -257,7 +259,7 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
 
         if (operation == Operation.PLACE) {
             if (held == null) return false;
-            mode.handler.savePlaceable(stack, selected, world, player, mop);
+            if (!mode.handler.savePlaceable(stack, selected, world, player, mop)) return false;
         }
 
         // attempt to commit blocks to world if true, can still be cancelled if the set doesn't resolve
@@ -307,8 +309,8 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
     }
 
 
-    @SideOnly(Side.CLIENT)
     @Override
+    @SideOnly(Side.CLIENT)
     public boolean showDurabilityBar(ItemStack stack) {
         Minecraft mc = Minecraft.getMinecraft();
         EntityPlayer player = mc.thePlayer;
@@ -317,8 +319,8 @@ public class ItemBuildingGadget extends ItemFlintAndSteel implements IItemRender
         return Config.consumesEnergy && (hasRF || hasHE) && getEnergyStored(stack) < getMaxEnergyStored(stack);
     }
 
-    @SideOnly(Side.CLIENT)
     @Override
+    @SideOnly(Side.CLIENT)
     public double getDurabilityForDisplay(ItemStack stack) {
         return 1 - (double) getEnergyStored(stack) / (double) getMaxEnergyStored(stack);
     }
